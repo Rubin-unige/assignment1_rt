@@ -103,3 +103,5 @@ catkin_make
 ```
 
 After building, your workspace should be ready to launch the nodes in the package.
+
+## Run 
