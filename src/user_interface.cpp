@@ -16,10 +16,11 @@ int main( int argc, char **argv){
     ros::init(argc, argv, "turtle_user_interface");
     ros::NodeHandle nh;
 
-    // Initialise service client
+    // Initialise service clients
     ros::ServiceClient client_spawn = nh.serviceClient <turtlesim::Spawn> ("/spawn");
-    // Spawn turtle2
     turtlesim::Spawn spawn_srv;
+
+    // Spawn Turtle
     spawn_srv.request.x = 5.0;
     spawn_srv.request.y = 2.0;
     spawn_srv.request.theta = 0.0;
