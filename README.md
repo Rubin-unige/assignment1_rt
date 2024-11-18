@@ -38,6 +38,9 @@ This node ensures that the turtles maintain safe distances from each other and s
 The root of this repository is the package folder, which contains all necessary files and scripts for running the assignment nodes. When cloning the repository for the first time, place it directly in the `src` folder of your ROS workspace.
 
 ### Folder and File Overview
+- **`/msg`**: Contains custom message definitions.
+  - `turtle_distance.msg`: Custom message file for distance monitoring and boundary status.
+
 - **`/scripts`**: Contains Python scripts used for the nodes in this project. 
   - `user_interface.py`: Python version of user interface node.
   - `distance_monitor.py`: Python version of distance monitor node.
@@ -97,7 +100,7 @@ catkin_make
 ```
 After building, your workspace will be ready to launch the nodes in the package.
 
-## Running Everything
+## Launching Simulation and Nodes
 
 1. **Start the ROS Master**
 
@@ -118,6 +121,7 @@ This will open the Turtlesim window where the turtles (`turtle1` and `turtle2`) 
 At this point, you can proceed to run either the **C++** or **Python** version of the `User Interface` and `Distance Monitor` nodes, depending on which implementation you want to use.
 
 ### Running the C++ Version
+---
 To run the C++ nodes, follow these steps:
 - Make sure that the `roscore` and `turtlesim` nodes are running.
 
@@ -132,10 +136,11 @@ rosrun assignment1_rt distance_monitor
 This will start both the **C++ user interface** for controlling the turtles and the **distance monitor** to track their movements.
 
 ### Running the Python Version
+---
 To run the Python nodes, follow these steps:
 - Make sure that the `roscore` and `turtlesim` nodes are running.
 
-- **Make the Python scripts executable**
+- Make the **Python scripts executable**.
 
 Before running the Python scripts, you need to ensure they are executable. Run the following command for each Python script (`user_interface.py` and `distance_monitor.py`):
 ``` bash
