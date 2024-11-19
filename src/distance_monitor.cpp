@@ -110,11 +110,13 @@ int main(int argc, char **argv)
 void turtle1PoseCallback(const turtlesim::Pose::ConstPtr& msg) {
     turtle1_x = msg->x;
     turtle1_y = msg->y;
+    ROS_INFO("Turtle2 updated position: (%.2f, %.2f)", turtle1_x, turtle1_y);
 }
 
 void turtle2PoseCallback(const turtlesim::Pose::ConstPtr& msg) {
     turtle2_x = msg->x;
     turtle2_y = msg->y;
+    ROS_INFO("Turtle2 updated position: (%.2f, %.2f)", turtle2_x, turtle2_y);
 }
 
 bool is_near_boundary(float x, float y)
