@@ -163,3 +163,11 @@ This will start both the **Python user interface** for controlling the turtles a
 To stop the nodes, simply press `Ctrl+C` in the terminal where each node is running (`User Interface`, `Distance Monitor`, `Turtlesim`, or `roscore`). This will terminate the nodes and stop the simulation.
 
 ## Implementation
+### User Interface node
+- Implementation
+- Issues
+- Solutions
+### Distance Monitor node
+- Implementation
+- Issues
+- Solutions
