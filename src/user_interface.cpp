@@ -35,6 +35,7 @@ int main( int argc, char **argv){
 
     while (ros::ok())
     {
+        
         // User input
         std::cout << "Enter the turtle you want to control (turtle1 or turtle2): ";
         std::cin >> turtle_name;
