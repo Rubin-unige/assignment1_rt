@@ -162,12 +162,126 @@ This will start both the **Python user interface** for controlling the turtles a
 
 To stop the nodes, simply press `Ctrl+C` in the terminal where each node is running (`User Interface`, `Distance Monitor`, `Turtlesim`, or `roscore`). This will terminate the nodes and stop the simulation.
 
-## Implementation
+## Implementation Details
+
 ### User Interface node
-- Implementation
-- Issues
-- Solutions
-### Distance Monitor node
-- Implementation
-- Issues
-- Solutions
+
+The structure of the `user_interface` node is similar in both C++ and Python. The logic for handling user inputs, setting velocities, and publishing commands is nearly identical in both languages. Since the logic for both versions is fundamentally the same, I will explain the details using the C++ version as an example.
+
+However, there was one key difference when running the node in Python: if the user closed the node and opened it again, `turtle2` would already exist in the simulation, causing a conflict. This issue did not occur in the C++ implementation, where if `turtle2` already existed, the node would simply display a message saying "turtle2 already exists" and take the position from the already existing turtle.
+
+In the Python version, when the node is restarted, attempting to spawn `turtle2` again would cause the node to crash because `turtle2` already existed in the simulation. To address this, additional checks were implemented to ensure that `turtle2` is only spawned if it doesn't already exist. This solution is explained below in separate section.
+
+**Spawning Turtle2**
+
+The `user_interface` node automatically spawns a second turtle, `turtle2`, in the simulation when the program starts. This is accomplished using the `/spawn` service provided by `turtlesim`, which allows for creating a new turtle at a specified position and orientation in the simulation environment.
+
+In this implementation:
+
+- `turtle2` is spawned at coordinates **(5.0, 2.0)** with an orientation of **0.0** radians, positioning it to face directly to the right.
+- The `/spawn` service is called during the initialization phase of the node, ensuring that `turtle2` is added automatically without requiring any user input.
+
+Below is the code that sets up the spawn request:
+```cpp
+  // Initialise service clients
+  ros::ServiceClient client_spawn = nh.serviceClient <turtlesim::Spawn> ("/spawn");
+  turtlesim::Spawn spawn_srv;
+  // Spawn Turtle
+  spawn_srv.request.x = 5.0;
+  spawn_srv.request.y = 2.0;
+  spawn_srv.request.theta = 0.0;
+  spawn_srv.request.name = "turtle2";
+  client_spawn.call(spawn_srv);
+```
+
+**User Interface**
+
+The user interface of the `user_interface` node allows the user to control either `turtle1` or `turtle2` by setting their velocities.
+
+- *Selecting the Turtle*
+
+The user is prompted to select a turtle (either `turtle1` or `turtle2`). If an invalid input is provided, the program will re-prompt the user until a valid turtle name is entered
+
+```cpp
+std::cout << "Enter the turtle you want to control (turtle1 or turtle2): ";
+std::cin >> turtle_name;
+if (turtle_name != "turtle1" && turtle_name != "turtle2") {
+  std::cout << "Invalid turtle name. Please enter 'turtle1' or 'turtle2'.\n";
+  continue;
+}
+```
+- *Setting Velocities*
+
+After selecting a turtle, the user is asked to enter the linear and angular velocities. Error handling ensures only valid numeric inputs are accepted.
+
+  1.  Linear Velocity (x):<br> 
+  The user is prompted for the linear velocity. If the input is invalid, the program clears the error state and asks the user to re-enter a valid value.
+  ```cpp
+  std::cout << "Enter the linear velocity (x): ";
+  while (!(std::cin >> linear_x)) {
+    std::cout << "Invalid input. Please enter a valid number for linear velocity: ";
+    std::cin.clear();  
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  }
+  ```
+  2.  Angular Velocity (z):<br>
+  The same process is repeated for the angular velocity input.
+  ```cpp
+  std::cout << "Enter the angular velocity (z): ";
+  while (!(std::cin >> angular_z)) {
+    std::cout << "Invalid input. Please enter a valid number for angular velocity: ";
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  }
+  ```
+
+- *Error Handling Issue*
+
+During the initial implementation of the node, I faced an issue with invalid inputs for the velocities. If the user entered a non-numeric value, the program would crash or behave unexpectedly. To resolve this, I added error handling that clears the input buffer and prompts the user to re-enter valid values for both the linear and angular velocities. 
+
+**Publishing User Input**
+
+Once the user has selected the turtle and entered the linear and angular velocities, the `user_interface` node publishes these commands to the respective turtle's velocity topic. 
+
+The following steps are taken to publish the user inputs:
+
+  1.  Turtle Selection:<br>
+  After the user selects the turtle, the node checks which turtle was selected and publishes the corresponding velocity commands to the respective topic.
+  - `turtle1` uses the topic `/turtle1/cmd_vel`.
+  - `turtle2` uses the topic `/turtle2/cmd_vel`.
+```cpp
+  ros::Publisher pub_turtle1 = nh.advertise <geometry_msgs::Twist>("/turtle1/cmd_vel", 10);
+  ros::Publisher pub_turtle2 = nh.advertise <geometry_msgs::Twist>("/turtle2/cmd_vel", 10);
+```
+  2. Publishing the Velocity Command:<br>
+  A `geometry_msgs::Twist` message is created, which holds the linear and angular velocities. This message is then published to the appropriate topic using the publisher.
+
+Below is the code for publishing the velocities:
+```cpp
+  geometry_msgs::Twist turtle_vel;
+  turtle_vel.linear.x = linear_x;
+  turtle_vel.angular.z = angular_z;
+  if (turtle_name == "turtle1")
+  {
+      pub_turtle1.publish(turtle_vel);
+      ros::Duration(1.0).sleep();
+      turtle_vel.linear.x = 0.0;
+      turtle_vel.angular.z = 0.0;
+      pub_turtle1.publish(turtle_vel);
+  }
+  else if (turtle_name == "turtle2") {
+      pub_turtle2.publish(turtle_vel);  
+      ros::Duration(1.0).sleep();    
+      turtle_vel.linear.x = 0;         
+      turtle_vel.angular.z = 0;
+      pub_turtle2.publish(turtle_vel); 
+  } 
+```
+*Explanation of the Code:*
+  - `geometry_msgs::Twist turtle_vel;`: This message holds the velocity commands for the turtle. The `linear.x` field holds the linear velocity, and `angular.z` holds the angular velocity.
+  - `turtle_vel.linear.x = linear_x;` and `turtle_vel.angular.z = angular_z;`: These lines set the user-defined velocities for linear and angular movement.
+  - `pub_turtle1.publish(turtle_vel);` and `pub_turtle2.publish(turtle_vel);`: Depending on the selected turtle, the program publishes the velocity message to the appropriate topic (`/turtle1/cmd_vel` or `/turtle2/cmd_vel`).
+  - `ros::Duration(1.0).sleep();`: This command pauses the program for 1 second, allowing the turtle to move.
+  - **Stopping the Turtle**: After 1 second, the velocities are set to 0 (both linear and angular) to stop the turtle, and the stop command is published to the respective turtle.
+
+`ros::Duration(1.0).sleep()` is used instead of `sleep(1.0)` because it is specifically designed for ROS nodes, ensuring proper synchronization with the ROS event loop and preventing any timing issues.
