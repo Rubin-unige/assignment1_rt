@@ -45,6 +45,33 @@ def check_if_overshot_boundary(x, y):
         return True
     return False
 
+# Function to reposition the turtle if it overshot the boundary
+def reposition_turtle(pub, x, y):
+    move_back_msg = Twist()
+
+    # If the turtle has overshot in the x direction
+    if x > max_limit:
+        rospy.logwarn("Turtle overshot on X axis. Moving back.")
+        move_back_msg.linear.x = -0.2  # Move back by applying negative velocity on the X axis
+    elif x < boundary_limit:
+        rospy.logwarn("Turtle overshot on X axis (negative side). Moving back.")
+        move_back_msg.linear.x = 0.2   # Move back by applying positive velocity on the X axis
+
+    # If the turtle has overshot in the y direction
+    if y > max_limit:
+        rospy.logwarn("Turtle overshot on Y axis. Moving back.")
+        move_back_msg.linear.x = -0.2  # Move back in the Y axis
+    elif y < boundary_limit:
+        rospy.logwarn("Turtle overshot on Y axis (negative side). Moving back.")
+        move_back_msg.linear.x = 0.2   # Move back in the Y axis
+
+    # Publish the velocity to move the turtle back
+    pub.publish(move_back_msg)
+
+    # Stop the turtle after moving it back within the boundaries
+    rospy.sleep(0.5)  # Let the turtle move back for a brief moment
+    stop_turtle(pub)  # Stop the turtle after it moves back
+
 def main():
     global pub_turtle1, pub_turtle2
 
@@ -62,7 +89,7 @@ def main():
     # Publisher for TurtleDistance (custom message)
     pub_distance = rospy.Publisher("/turtle_distance_topic", turtle_distance, queue_size=10)
 
-    rate = rospy.Rate(5)  # Set the rate to 5Hz
+    rate = rospy.Rate(10)  # Set the rate to 10Hz
 
     while not rospy.is_shutdown():
         # Calculate the distance between turtles
@@ -101,9 +128,11 @@ def main():
 
         if turtle1_overshot:
             rospy.logwarn("Turtle1 is over the boundary after stopping!")
+            reposition_turtle(pub_turtle1, turtle1_x, turtle1_y)
 
         if turtle2_overshot:
             rospy.logwarn("Turtle2 is over the boundary after stopping!")
+            reposition_turtle(pub_turtle2, turtle2_x, turtle2_y)
 
         rate.sleep()
 
