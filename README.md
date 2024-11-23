@@ -3,6 +3,14 @@ This repository contains the assignment work for the **Research Track** course, 
 **Rubin Khadka Chhetri**  
 **ID: 6558048**
 
+## Table of Contents
+- [Introduction](#introduction)
+- [Node Details](#node-details)
+- [Repository Structure](#repository-structure)
+- [Getting Started (Read Before Action)](#getting-started-read-before-action)
+- [Launching Simulation and Nodes](#launching-simulation-and-nodes)
+- [Implementation Details](#implementation-details)
+
 ## Introduction
 This repository implements a ROS package containing two main nodes: 
 
@@ -292,3 +300,31 @@ Below is the code for publishing the velocities:
 #### 3. Stopping the Turtle
 After 1 second, the velocities are set to 0 (both linear and angular) to stop the turtle, and the stop command is published to the respective turtle.
 
+### 4. Python `turtle2` already exist issue
+As discussed earlier, when restarting the `user_interface` node in Python, the node crashed because `turtle2` already existed in the simulation. This issue did not occur in the C++ version.
+
+To address this problem in Python, an additional check was implemented to ensure that turtle2 already exists in the simulation before attempting to spawn it. This check uses the /turtle2/pose topic, which is only active when turtle2 is present. The solution involves the following steps:
+
+- Check if turtle2 Exists:
+
+  - Subscribe to the /turtle2/pose topic, which publishes the position and orientation of turtle2.
+  - If a message is received within a 1-second timeout, it confirms that turtle2 already exists in the simulation, and no further action is needed.
+- Spawn turtle2 if Not Found:
+
+  - If no message is received within the timeout, the node assumes that turtle2 does not exist.
+  - The node then calls the /spawn service to create turtle2 at the coordinates (5.0, 2.0) with an orientation of 0.0.
+```Python
+def check_if_turtle2_exists():
+    ## Checks if turtle2 exists by subscribing to /turtle2/pose.
+    turtle2_exists = False
+    def pose_callback(msg):
+        nonlocal turtle2_exists
+        turtle2_exists = True  # Message received; turtle2 exists
+    # Subscribe to /turtle2/pose topic
+    rospy.Subscriber('/turtle2/pose', Pose, pose_callback)
+    # Short delay , wait message
+    timeout_time = rospy.Time.now() + rospy.Duration(1.0)  # 1-second timeout
+    while rospy.Time.now() < timeout_time and not rospy.is_shutdown():
+        rospy.sleep(0.1)  # Sleep in small increments
+    return turtle2_exists
+```
