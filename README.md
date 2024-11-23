@@ -157,7 +157,7 @@ This will start both the **C++ user interface** for controlling the turtles and 
 To run the Python nodes, follow these steps:
 - Make sure that the `roscore` and `turtlesim` nodes are running.
 
-- **Make the Python scripts executable**
+- Make the **Python scripts executable**
 
 Before running the Python scripts, you need to ensure they are executable. Run the following command for each Python script (`user_interface.py` and `distance_monitor.py`):
 ``` bash
@@ -340,3 +340,11 @@ def check_if_turtle2_exists():
 ```
 ---
 ### Distance Monitor Node
+
+Similar to  `user interface` node, the implementation of this node in both Python and C++ is similar. I will be using mostly C++ code as example to explain the implemention idea of this node.
+
+### 1. Set boundary conditions
+### 2. Caluclate the distance between two turtles
+### 3. Check if the turtle are too close to each other
+### 4. Check if the turtle are near boundary
+### 5. Check for overshoot and handle this issue
