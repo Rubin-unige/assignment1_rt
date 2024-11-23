@@ -6,10 +6,19 @@ This repository contains the assignment work for the **Research Track** course, 
 ## Table of Contents
 - [Introduction](#introduction)
 - [Node Details](#node-details)
+  - [User Interface Node](#1-user-interface-node-user_interface)
+  - [Distance Monitor Node](#2-distance-monitor-node-distance_monitor)
 - [Repository Structure](#repository-structure)
 - [Getting Started (Read Before Action)](#getting-started-read-before-action)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
 - [Launching Simulation and Nodes](#launching-simulation-and-nodes)
+  - [Running C++ version](#running-the-c-version)
+  - [Running Python version](#running-the-python-version)
+  - [Alternative Configurations](#alternative-configurations)
 - [Implementation Details](#implementation-details)
+  - [User Interface Node](#user-interface-node)
+  - [Distance Monitor Node](#distance-monitor-node)
 
 ## Introduction
 This repository implements a ROS package containing two main nodes: 
@@ -19,9 +28,9 @@ This repository implements a ROS package containing two main nodes:
 
 These nodes work together within the **`turtlesim`** simulation environment to create a simple, interactive system for controlling and monitoring two turtles.
 
-This assignment was completed using both **Python** and **C++**.
-
-Below are details about each node and its functionality.<br>
+**Note**:<br> 
+  - This assignment was completed using both **Python** and **C++**. 
+  - Custom message is included in this project, which is not required. Good for further development 
 
 ## Node Details
 ### 1. User Interface Node (user_interface)
@@ -78,7 +87,7 @@ sudo apt-get install python3
 ```
 After installation, you can proceed to cloning the repository.
 
-### Clone the Repository
+### Setup 
 #### 1. Set up your ROS workspace
 
 Create a new workspace (or use an existing one) and navigate to its `src` directory:
@@ -108,7 +117,7 @@ catkin_make
 ```
 After building, your workspace will be ready to launch the nodes in the package.
 
-## Launch Simulation and Nodes
+## Launching Simulation and Nodes
 
 #### 1. Start the ROS Master
 
@@ -177,7 +186,7 @@ To stop the nodes, simply press `Ctrl+C` in the terminal where each node is runn
 
 ## Implementation Details
 
-### User Interface node
+### User Interface Node
 
 The structure of the `user_interface` node is similar in both C++ and Python. The logic for handling user inputs, setting velocities, and publishing commands is nearly identical in both languages. Since the logic for both versions is fundamentally the same, I will explain the details using the C++ version as an example.
 
@@ -206,7 +215,6 @@ Below is the code that sets up the spawn request:
   spawn_srv.request.name = "turtle2";
   client_spawn.call(spawn_srv);
 ```
-
 ### 2. User Interface
 
 The user interface of the `user_interface` node allows the user to control either `turtle1` or `turtle2` by setting their velocities.
@@ -313,6 +321,8 @@ To address this problem in Python, an additional check was implemented to ensure
 
   - If no message is received within the timeout, the node assumes that turtle2 does not exist.
   - The node then calls the /spawn service to create turtle2 at the coordinates (5.0, 2.0) with an orientation of 0.0.
+
+Below is the code that sets up this check:
 ```Python
 def check_if_turtle2_exists():
     ## Checks if turtle2 exists by subscribing to /turtle2/pose.
@@ -328,3 +338,15 @@ def check_if_turtle2_exists():
         rospy.sleep(0.1)  # Sleep in small increments
     return turtle2_exists
 ```
+---
+### Distance Monitor Node
+
+Similar to  `user interface` node, the implementation of this node in both Python and C++ is similar. I will be using mostly C++ code as example to explain the implemention idea of this node.
+
+### 1. Set boundary conditions
+### 2. Caluclate the distance between two turtles
+### 3. Check if the turtle are too close to each other
+### 4. Check if the turtle are near boundary
+### 5. Check for overshoot and handle this issue
+
+## Summary
