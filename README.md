@@ -338,14 +338,66 @@ def check_if_turtle2_exists():
         rospy.sleep(0.1)  # Sleep in small increments
     return turtle2_exists
 ```
+
 ---
 ### Distance Monitor Node
 
-Similar to  `user interface` node, the implementation of this node in both Python and C++ is similar. I will be using mostly C++ code as example to explain the implemention idea of this node.
+Similar to  `user interface` node, the `Distance Monitor` Node shares a similar structure in both **Python** and **C++**, with the core logic remaining consistent across both implementations. I will use the **C++** version as the primary example to explain the implementation.
 
 ### 1. Set boundary conditions
-### 2. Caluclate the distance between two turtles
+In `turtlesim`, the window has predefined coordinates where the turtles' positions are constrained. The boundary conditions are essential to keep the turtles within the window and avoid collisions. The following conditions are defined:
+
+  - **boundary_limit**: This is the minimum allowed position (in both the x and y directions). If the turtle's position gets close to this limit, it is considered near the boundary. Here it is set to 1.0.
+
+  - **max_limit**: This is the maximum allowed position for a turtle. If the turtle exceeds this limit, it is considered out of bounds, and corrective actions should be taken. Here it is set to 10.0.
+
+  - **distance_threshold**: This defines the minimum safe distance between the two turtles. If the turtles get closer than this distance, they are considered to be too close and need to be stopped to avoid collision. Here it is set to 2.0.
+```cpp
+// Global variables to store turtle positions
+float turtle1_x, turtle1_y, turtle2_x, turtle2_y;
+const float distance_threshold = 2.0;
+const float boundary_limit = 1.0;
+const float max_limit = 10.0;
+```
+### 2. Calculate the distance between two turtles
+
+To calculate the distance between two turtles, the **Euclidean distance** formula is used. This formula determines the straight-line distance between two points in a 2D space based on their **x** and **y** coordinates. The formula is:
+
+$$
+distance = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}
+$$
+
+Where:
+- \( (x_1, y_1) \) are the coordinates of turtle1,
+- \( (x_2, y_2) \) are the coordinates of turtle2.
+This calculation helps in monitoring whether the turtles are too close to each other, based on the distance_threshold.
+```cpp
+// Calculate the distance between turtles
+float distance = sqrt(pow(turtle2_x - turtle1_x, 2) + pow(turtle2_y - turtle1_y, 2));
+```
+Now, to perform this calculation, we need the **x** and **y** values for both turtles. These values are retrieved by subscribing to the `/turtle1/pose` and `/turtle2/pose` topics. Each turtle continuously publishes its position in the **Pose** message format, which includes the **x** and **y** coordinates.
+```cpp
+    // Subscribers for turtle positions
+    ros::Subscriber sub_turtle1 = nh.subscribe("/turtle1/pose", 10, turtle1PoseCallback);
+    ros::Subscriber sub_turtle2 = nh.subscribe("/turtle2/pose", 10, turtle2PoseCallback);
+```
+**turtle1PoseCallback** and **turtle2PoseCallback** are callback functions that update the global position variables (turtle1_x, turtle1_y, turtle2_x, turtle2_y) whenever new Pose messages are received from each turtle.
+
+```cpp
+void turtle1PoseCallback(const turtlesim::Pose::ConstPtr& msg) {
+    turtle1_x = msg->x;
+    turtle1_y = msg->y;
+    ROS_INFO("Turtle1 updated position: (%.2f, %.2f)", turtle1_x, turtle1_y);
+}
+```
 ### 3. Check if the turtle are too close to each other
+After calculating the distance, we use the **distance_threshold** to check if the turtles are too close. If the distance is less than the threshold, a flag is set to indicate that the turtles need attention. The following check updates the flag:
+```cpp
+// Check if turtles are too close
+bool is_too_close = (distance < distance_threshold);
+```
+This flag can then be used to trigger any necessary actions, such as stopping or adjusting the turtles' movements.
+
 ### 4. Check if the turtle are near boundary
 ### 5. Check for overshoot and handle this issue
 
