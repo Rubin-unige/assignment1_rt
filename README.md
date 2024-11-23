@@ -13,6 +13,9 @@ This repository contains the assignment work for the **Research Track** course, 
   - [Prerequisites](#prerequisites)
   - [Setup](#setup)
 - [Launching Simulation and Nodes](#launching-simulation-and-nodes)
+  - [Running C++ version](#running-the-c-version)
+  - [Running Python version](#running-the-python-version)
+  - [Alternative Configurations](#alternative-configurations)
 - [Implementation Details](#implementation-details)
   - [User Interface Node](#user-interface-node)
   - [Distance Monitor Node](#distance-monitor-node)
@@ -149,7 +152,7 @@ rosrun assignment1_rt distance_monitor
 ```
 This will start both the **C++ user interface** for controlling the turtles and the **distance monitor** to track their movements.
 
-#### Running the Python
+#### Running the Python Version
 ---
 To run the Python nodes, follow these steps:
 - Make sure that the `roscore` and `turtlesim` nodes are running.
