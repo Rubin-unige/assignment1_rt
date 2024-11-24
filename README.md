@@ -440,6 +440,21 @@ void stopTurtle(ros::Publisher &pub){
 ```
 This ensures that turtles stop moving when they're too close or near the boundaries.
 
-### 6. Check for overshoot and handle this issue
+### 6. Check and handle the overshoot issue
+- **Issue**
+The overshoot occurs because the turtle does not stop exactly at the boundary due to delays in processing movement commands, such as timing or message delays. As the turtle approaches the boundary, the system may not react quickly enough, causing it to move past the boundary. Additionally, when reversing from the boundary, the system might incorrectly detect the turtle as too close, causing it to stop prematurely and prompt the user to input velocity conditions again. This behavior is undesirable and needs to be avoided.
+The issue is further exacerbated when the turtle's velocity is too fast, as the system has less time to process the stop command and adjust the turtle's position before it crosses the boundary.
+
+- **Solutions**
+
+  1.  Limit Turtle's Velocity: 
+  
+  Enforce a maximum velocity (e.g., less than 5) to ensure the turtle does not move too fast. This gives the system sufficient time to process movement commands, as the loop rate is set to 10, meaning the program processes 10 messages per second. A velocity below 5 allows enough time for the system to respond to boundary conditions. This change is now implemented in the user interface node, making the program smoother and reducing overshoot. However, even with this limitation, overshoot can still occur in some cases.
+//todo: implement thisn in node 1
+
+  2.  Auto-adjust Position Near Boundary: 
+  
+  After the turtle stops, check for overshoot. If overshoot is detected (i.e., the turtle crosses the boundary), automatically move the turtle back within the boundary to ensure it stays within the defined limits. This helps prevent the turtle from moving past the boundary and ensures smooth movement during boundary transitions.
+//todo: explian and show code of this part 
 
 ## Summary
