@@ -236,27 +236,33 @@ After selecting a turtle, the user is asked to enter the linear and angular velo
   - Linear Velocity (x):<br> 
   The user is prompted for the linear velocity. If the input is invalid, the program clears the error state and asks the user to re-enter a valid value.
   ```cpp
-  std::cout << "Enter the linear velocity (x): ";
-  while (!(std::cin >> linear_x)) {
-    std::cout << "Invalid input. Please enter a valid number for linear velocity: ";
-    std::cin.clear();  
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  std::cout << "Enter the linear velocity x (between -5 and 5): ";
+  while (!(std::cin >> linear_x) || linear_x < -5 || linear_x > 5) { // Check range and input validity
+      std::cout << "Invalid input. Please enter a linear velocity between -5 and 5: ";
+      std::cin.clear(); // Clear error
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   }
   ```
   - Angular Velocity (z):<br>
   The same process is repeated for the angular velocity input.
   ```cpp
-  std::cout << "Enter the angular velocity (z): ";
-  while (!(std::cin >> angular_z)) {
-    std::cout << "Invalid input. Please enter a valid number for angular velocity: ";
-    std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  std::cout << "Enter the angular velocity z (between -5 and 5): ";
+  while (!(std::cin >> angular_z) || angular_z < -5 || angular_z > 5) { // Check range and input validity
+      std::cout << "Invalid input. Please enter an angular velocity between -5 and 5: ";
+      std::cin.clear(); // Clear error
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   }
   ```
 
 #### Error Handling Issue
 
+- **Invalid user input issue**
+
 During the initial implementation of the node, I faced an issue with invalid inputs for the velocities. If the user entered a non-numeric value, the program would crash or behave unexpectedly. To resolve this, I added error handling that clears the input buffer and prompts the user to re-enter valid values for both the linear and angular velocities. 
+
+- **Overshoot Issue**
+
+While running the distance monitor node, I encountered the overshoot issue, which is explained in more detail in the [Overshoot Issue](#6-check-and-handle-the-overshoot-issue) section. One of the solutions to this problem was to constrain the velocities the user can input, thereby giving the program enough time to process the information. As shown in the code above, users are only allowed to enter velocities between **-5** and **5**, which helps to prevent the turtle from moving too quickly and overshooting the boundary.
 
 ### 3. Publishing User Input
 
@@ -448,10 +454,12 @@ The issue is further exacerbated when the turtle's velocity is too fast, as the 
 
 - **Solutions**
 
-1.  Limit Turtle's Velocity: 
+1.  Limit Turtle's Velocity
+A velocity constraint of between **5** and **-5** has been enforced. This ensures that the turtle moves at a manageable speed, allowing the system sufficient time to process movement commands and react to boundary conditions effectively. The loop rate for processing messages is set to 10 Hz, meaning the system processes 10 messages per second. By restricting velocity to this range, the turtle's position updates occur smoothly, preventing excessive overshoot due to high-speed movement.
 
-Enforce a maximum velocity (e.g., less than 5) to ensure the turtle does not move too fast. This gives the system sufficient time to process movement commands, as the loop rate is set to 10, meaning the program processes 10 messages per second. A velocity below 5 allows enough time for the system to respond to boundary conditions. This change is now implemented in the user interface node. However, even with this limitation, overshoot can still occur.
-//todo: implement thisn in node 1
+Even with velocity constraints, minor overshoot may still occur because of message delays or edge cases. For such scenarios, an auto-adjustment mechanism has been added to bring the turtle back within boundaries when overshoot is detected.
+
+Look at [error explaination](#error-handling-issue) section above for explanation of the code.
 
 2.  Auto-adjust Position Near Boundary: 
   
