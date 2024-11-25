@@ -28,15 +28,14 @@ This repository implements a ROS package containing two main nodes:
 
 These nodes work together within the **`turtlesim`** simulation environment to create a simple, interactive system for controlling and monitoring two turtles.
 
-**Note**:<br> 
+**Note**:
   - This assignment was completed using both **Python** and **C++**. 
   - Custom message is included in this project, which is not required. Good for further development 
 
 ## Node Details
 ### 1. User Interface Node (user_interface)
 
-This node is responsible for handling user input and controlling the movements of two turtles (`turtle1` and `turtle2`) in the simulator. Its key functions include:<br>
-
+This node is responsible for handling user input and controlling the movements of two turtles (`turtle1` and `turtle2`) in the simulator. Its key functions include:
 -  Spawns a second turtle (`turtle2`) in the simulation environment.
 -  Prompts the user to:
    -  Select which turtle to control (either `turtle1` or `turtle2`).
@@ -45,8 +44,7 @@ This node is responsible for handling user input and controlling the movements o
 
 ### 2. Distance Monitor Node (distance_monitor)
 
-This node ensures that the turtles maintain safe distances from each other and stay within the boundaries of the simulation environment. This node continuously calculates and monitors turtle positions. Its key features are:<br>
-
+This node ensures that the turtles maintain safe distances from each other and stay within the boundaries of the simulation environment. This node continuously calculates and monitors turtle positions. Its key features are:
 -  Continuously calculates the distance between `turtle1` and `turtle2` and publishes this information on a dedicated ROS topic for monitoring.
 -  Automatically stops a turtle if it approaches the other turtle.
 -  Stops a turtle if it's position is too close to the boundaries.
@@ -188,11 +186,11 @@ To stop the nodes, simply press `Ctrl+C` in the terminal where each node is runn
 
 ### User Interface Node
 
-The structure of the `user_interface` node is similar in both C++ and Python. The logic for handling user inputs, setting velocities, and publishing commands is nearly identical in both languages. Since the logic for both versions is fundamentally the same, I will explain the details using the C++ version as an example.
+The structure of the `user_interface` node is similar in both **C++** and **Python**. The logic for handling user inputs, setting velocities, and publishing commands is nearly identical in both languages. Since the logic for both versions is fundamentally the same, I will explain the details using the **C++** version as an example.
 
-However, there was one key difference when running the node in Python: if the user closed the node and opened it again, `turtle2` would already exist in the simulation, causing a conflict. This issue did not occur in the C++ implementation, where if `turtle2` already existed, the node would simply display a message saying "turtle2 already exists" and take the position from the already existing turtle.
+However, there was one key difference when running the node in **Python**: if the user closed the node and opened it again, `turtle2` would already exist in the simulation, causing a conflict. This issue did not occur in the **C++** implementation, where if `turtle2` already existed, the node would simply display a message saying "turtle2 already exists" and take the position from the already existing turtle.
 
-In the Python version, when the node is restarted, attempting to spawn `turtle2` again would cause the node to crash because `turtle2` already existed in the simulation. To address this, additional checks were implemented to ensure that `turtle2` is only spawned if it doesn't already exist. This solution is explained below in separate section.
+In the **Python** version, when the node is restarted, attempting to spawn `turtle2` again would cause the node to crash because `turtle2` already existed in the simulation. To address this, additional checks were implemented to ensure that `turtle2` is only spawned if it doesn't already exist. This solution is explained below in separate section.
 
 ### 1. Spawning Turtle2
 
@@ -205,15 +203,15 @@ In this implementation:
 
 Below is the code that sets up the spawn request:
 ```cpp
-  // Initialise service clients
-  ros::ServiceClient client_spawn = nh.serviceClient <turtlesim::Spawn> ("/spawn");
-  turtlesim::Spawn spawn_srv;
-  // Spawn Turtle
-  spawn_srv.request.x = 5.0;
-  spawn_srv.request.y = 2.0;
-  spawn_srv.request.theta = 0.0;
-  spawn_srv.request.name = "turtle2";
-  client_spawn.call(spawn_srv);
+// Initialise service clients
+ros::ServiceClient client_spawn = nh.serviceClient <turtlesim::Spawn> ("/spawn");
+turtlesim::Spawn spawn_srv;
+// Spawn Turtle
+spawn_srv.request.x = 5.0;
+spawn_srv.request.y = 2.0;
+spawn_srv.request.theta = 0.0;
+spawn_srv.request.name = "turtle2";
+client_spawn.call(spawn_srv);
 ```
 ### 2. User Interface
 
@@ -271,32 +269,32 @@ The following steps are taken to publish the user inputs:
   - `turtle1` uses the topic `/turtle1/cmd_vel`.
   - `turtle2` uses the topic `/turtle2/cmd_vel`.
 ```cpp
-  ros::Publisher pub_turtle1 = nh.advertise <geometry_msgs::Twist>("/turtle1/cmd_vel", 10);
-  ros::Publisher pub_turtle2 = nh.advertise <geometry_msgs::Twist>("/turtle2/cmd_vel", 10);
+ros::Publisher pub_turtle1 = nh.advertise <geometry_msgs::Twist>("/turtle1/cmd_vel", 10);
+ros::Publisher pub_turtle2 = nh.advertise <geometry_msgs::Twist>("/turtle2/cmd_vel", 10);
 ```
 #### 2. Publishing the Velocity Command
   A `geometry_msgs::Twist` message is created, which holds the linear and angular velocities. This message is then published to the appropriate topic using the publisher.
 
 Below is the code for publishing the velocities:
 ```cpp
-  geometry_msgs::Twist turtle_vel;
-  turtle_vel.linear.x = linear_x;
-  turtle_vel.angular.z = angular_z;
-  if (turtle_name == "turtle1")
-  {
-      pub_turtle1.publish(turtle_vel);
-      ros::Duration(1.0).sleep();
-      turtle_vel.linear.x = 0.0;
-      turtle_vel.angular.z = 0.0;
-      pub_turtle1.publish(turtle_vel);
-  }
-  else if (turtle_name == "turtle2") {
-      pub_turtle2.publish(turtle_vel);  
-      ros::Duration(1.0).sleep();    
-      turtle_vel.linear.x = 0;         
-      turtle_vel.angular.z = 0;
-      pub_turtle2.publish(turtle_vel); 
-  } 
+geometry_msgs::Twist turtle_vel;
+turtle_vel.linear.x = linear_x;
+turtle_vel.angular.z = angular_z;
+if (turtle_name == "turtle1")
+{
+  pub_turtle1.publish(turtle_vel);
+  ros::Duration(1.0).sleep();
+  turtle_vel.linear.x = 0.0;
+  turtle_vel.angular.z = 0.0;
+  pub_turtle1.publish(turtle_vel);
+}
+else if (turtle_name == "turtle2") {
+  pub_turtle2.publish(turtle_vel);  
+  ros::Duration(1.0).sleep();    
+  turtle_vel.linear.x = 0;         
+  turtle_vel.angular.z = 0;
+  pub_turtle2.publish(turtle_vel); 
+} 
 ```
 #### Explanation of the Code
   - `geometry_msgs::Twist turtle_vel;`: This message holds the velocity commands for the turtle. The `linear.x` field holds the linear velocity, and `angular.z` holds the angular velocity.
@@ -309,44 +307,154 @@ Below is the code for publishing the velocities:
 After 1 second, the velocities are set to 0 (both linear and angular) to stop the turtle, and the stop command is published to the respective turtle.
 
 ### 4. Python `turtle2` already exist issue
-As discussed earlier, when restarting the `user_interface` node in Python, the node crashed because `turtle2` already existed in the simulation. This issue did not occur in the C++ version.
+As discussed earlier, when restarting the `user_interface` node in **Python**, the node crashed because `turtle2` already existed in the simulation. This issue did not occur in the **C++** version.
 
-To address this problem in Python, an additional check was implemented to ensure that turtle2 already exists in the simulation before attempting to spawn it. This check uses the /turtle2/pose topic, which is only active when turtle2 is present. The solution involves the following steps:
+To address this problem in **Python**, an additional check was implemented to ensure that `turtle2` already exists in the simulation before attempting to spawn it. This check uses the `/turtle2/pose` topic, which is only active when `turtle2` is present. The solution involves the following steps:
 
-- Check if turtle2 Exists:
-
-  - Subscribe to the /turtle2/pose topic, which publishes the position and orientation of turtle2.
-  - If a message is received within a 1-second timeout, it confirms that turtle2 already exists in the simulation, and no further action is needed.
-- Spawn turtle2 if Not Found:
-
-  - If no message is received within the timeout, the node assumes that turtle2 does not exist.
-  - The node then calls the /spawn service to create turtle2 at the coordinates (5.0, 2.0) with an orientation of 0.0.
+- Check if `turtle2` Exists:
+  - Subscribe to the `/turtle2/pose` topic, which publishes the position and orientation of `turtle2`.
+  - If a message is received within a 1-second timeout, it confirms that `turtle2` already exists in the simulation, and no further action is needed.
+- Spawn `turtle2` if Not Found:
+  - If no message is received within the timeout, the node assumes that `turtle2` does not exist.
+  - The node then calls the `/spawn` service to create `turtle2` at the coordinates **(5.0, 2.0)** with an orientation of **0.0**.
 
 Below is the code that sets up this check:
 ```Python
 def check_if_turtle2_exists():
-    ## Checks if turtle2 exists by subscribing to /turtle2/pose.
-    turtle2_exists = False
-    def pose_callback(msg):
-        nonlocal turtle2_exists
-        turtle2_exists = True  # Message received; turtle2 exists
-    # Subscribe to /turtle2/pose topic
-    rospy.Subscriber('/turtle2/pose', Pose, pose_callback)
-    # Short delay , wait message
-    timeout_time = rospy.Time.now() + rospy.Duration(1.0)  # 1-second timeout
-    while rospy.Time.now() < timeout_time and not rospy.is_shutdown():
-        rospy.sleep(0.1)  # Sleep in small increments
-    return turtle2_exists
+  ## Checks if turtle2 exists by subscribing to /turtle2/pose.
+  turtle2_exists = False
+  def pose_callback(msg):
+      nonlocal turtle2_exists
+      turtle2_exists = True  # Message received; turtle2 exists
+  # Subscribe to /turtle2/pose topic
+  rospy.Subscriber('/turtle2/pose', Pose, pose_callback)
+  # Short delay , wait message
+  timeout_time = rospy.Time.now() + rospy.Duration(1.0)  # 1-second timeout
+  while rospy.Time.now() < timeout_time and not rospy.is_shutdown():
+      rospy.sleep(0.1)  # Sleep in small increments
+  return turtle2_exists
 ```
+
 ---
 ### Distance Monitor Node
 
-Similar to  `user interface` node, the implementation of this node in both Python and C++ is similar. I will be using mostly C++ code as example to explain the implemention idea of this node.
+Similar to  `user interface` node, the `Distance Monitor` Node shares a similar structure in both **Python** and **C++**, with the core logic remaining consistent across both implementations. I will use the **C++** version as the primary example to explain the implementation.
 
 ### 1. Set boundary conditions
-### 2. Caluclate the distance between two turtles
+In `turtlesim`, the window has predefined coordinates where the turtles' positions are constrained. The boundary conditions are essential to keep the turtles within the window and avoid collisions. The following conditions are defined:
+
+  - **boundary_limit**: This is the minimum allowed position (in both the x and y directions). If the turtle's position gets close to this limit, it is considered near the boundary. Here it is set to 1.0.
+
+  - **max_limit**: This is the maximum allowed position for a turtle. If the turtle exceeds this limit, it is considered out of bounds, and corrective actions should be taken. Here it is set to 10.0.
+
+  - **distance_threshold**: This defines the minimum safe distance between the two turtles. If the turtles get closer than this distance, they are considered to be too close and need to be stopped to avoid collision. Here it is set to 2.0.
+```cpp
+// Global variables to store turtle positions
+float turtle1_x, turtle1_y, turtle2_x, turtle2_y;
+const float distance_threshold = 2.0;
+const float boundary_limit = 1.0;
+const float max_limit = 10.0;
+```
+### 2. Calculate the distance between two turtles
+
+To calculate the distance between two turtles, the **Euclidean distance** formula is used. This formula determines the straight-line distance between two points in a 2D space based on their **x** and **y** coordinates. The formula is:
+
+$$
+distance = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}
+$$
+
+Where:
+- $\( (x_1, y_1) \)$ are the coordinates of turtle1,
+- $\( (x_2, y_2) \)$ are the coordinates of turtle2.
+
+This calculation helps in monitoring whether the turtles are too close to each other, based on the **distance_threshold**.
+```cpp
+// Calculate the distance between turtles
+float distance = sqrt(pow(turtle2_x - turtle1_x, 2) + pow(turtle2_y - turtle1_y, 2));
+```
+Now, to perform this calculation, we need the **x** and **y** values for both turtles. These values are retrieved by subscribing to the `/turtle1/pose` and `/turtle2/pose` topics. Each turtle continuously publishes its position in the **Pose** message format, which includes the **x** and **y** coordinates.
+```cpp
+// Subscribers for turtle positions
+ros::Subscriber sub_turtle1 = nh.subscribe("/turtle1/pose", 10, turtle1PoseCallback);
+ros::Subscriber sub_turtle2 = nh.subscribe("/turtle2/pose", 10, turtle2PoseCallback);
+```
+**turtle1PoseCallback** and **turtle2PoseCallback** are callback functions that update the global position variables (turtle1_x, turtle1_y, turtle2_x, turtle2_y) whenever new **Pose** messages are received from each turtle.
+
+```cpp
+void turtle1PoseCallback(const turtlesim::Pose::ConstPtr& msg) {
+  turtle1_x = msg->x;
+  turtle1_y = msg->y;
+  ROS_INFO("Turtle1 updated position: (%.2f, %.2f)", turtle1_x, turtle1_y);
+}
+```
 ### 3. Check if the turtle are too close to each other
+After calculating the distance, we use the **distance_threshold** to check if the turtles are too close. If the distance is less than the threshold, a flag is set to indicate that the turtles need attention. The following check updates the flag:
+```cpp
+// Check if turtles are too close
+bool is_too_close = (distance < distance_threshold);
+```
+This flag can then be used to trigger any necessary actions.
+
 ### 4. Check if the turtle are near boundary
-### 5. Check for overshoot and handle this issue
+To monitor if the turtles are approaching the boundary, we use a boolean flag. This flag is set by checking whether either of the turtles' coordinates are nearing or exceeding the predefined boundary limits. We perform this check using the `is_near_boundary()` function, which compares both the x and y positions of the turtles against the boundary limits (`boundary_limit` and `max_limit`). If any coordinate is outside the allowed range, the function returns `true`, indicating that the turtle is near the boundary.
+```cpp
+// Check if turtles are near boundaries
+bool turtle1_near_boundary = is_near_boundary(turtle1_x, turtle1_y);
+bool turtle2_near_boundary = is_near_boundary(turtle2_x, turtle2_y);
+```
+The `is_near_boundary` function is defined as:
+```cpp
+bool is_near_boundary(float x, float y)
+{
+  return (x < boundary_limit || x > max_limit || y < boundary_limit || y > max_limit);
+}
+```
+If any of the flags (distance or boundary) are triggered, necessary actions are performed.
+
+### 5. Perform necessary action
+If the turtles are too close to each other or near the boundary, they need to be stopped. This is done by publishing zero velocity commands to each turtle.
+```cpp
+  // If turtles are too close or near boundary, stop them
+  if (is_too_close || turtle1_near_boundary || turtle2_near_boundary)
+  {
+    if (is_too_close){
+        stopTurtle(pub_turtle1);  // Stop turtle1
+        stopTurtle(pub_turtle2);  // Stop turtle2
+    }
+    if (turtle1_near_boundary){
+        stopTurtle(pub_turtle1);  // Stop turtle1
+    }
+    if (turtle2_near_boundary){
+        stopTurtle(pub_turtle2);  // Stop turtle2
+    }
+  }
+```
+The `stopTurtle()` function stops a turtle by publishing a `geometry_msgs::Twist` message with zero velocity:
+```cpp
+void stopTurtle(ros::Publisher &pub){
+    geometry_msgs::Twist stop_msg;
+    stop_msg.linear.x = 0.0;
+    stop_msg.angular.z = 0.0;
+    pub.publish(stop_msg);
+}
+```
+This ensures that turtles stop moving when they're too close or near the boundaries.
+
+### 6. Check and handle the overshoot issue
+- **Issue**
+The overshoot occurs because the turtle does not stop exactly at the boundary due to delays in processing movement commands, such as timing or message delays. As the turtle approaches the boundary, the system may not react quickly enough, causing it to move past the boundary. Additionally, when reversing from the boundary, the system might incorrectly detect the turtle as too close, causing it to stop prematurely and prompt the user to input velocity conditions again. This behavior is undesirable and needs to be avoided.
+The issue is further exacerbated when the turtle's velocity is too fast, as the system has less time to process the stop command and adjust the turtle's position before it crosses the boundary.
+
+- **Solutions**
+
+  1.  Limit Turtle's Velocity: 
+  
+  Enforce a maximum velocity (e.g., less than 5) to ensure the turtle does not move too fast. This gives the system sufficient time to process movement commands, as the loop rate is set to 10, meaning the program processes 10 messages per second. A velocity below 5 allows enough time for the system to respond to boundary conditions. This change is now implemented in the user interface node, making the program smoother and reducing overshoot. However, even with this limitation, overshoot can still occur in some cases.
+//todo: implement thisn in node 1
+
+  2.  Auto-adjust Position Near Boundary: 
+  
+  After the turtle stops, check for overshoot. If overshoot is detected (i.e., the turtle crosses the boundary), automatically move the turtle back within the boundary to ensure it stays within the defined limits. This helps prevent the turtle from moving past the boundary and ensures smooth movement during boundary transitions.
+//todo: explian and show code of this part 
 
 ## Summary
