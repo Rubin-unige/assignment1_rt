@@ -455,15 +455,62 @@ The issue is further exacerbated when the turtle's velocity is too fast, as the 
 - **Solutions**
 
 1.  Limit Turtle's Velocity
+
 A velocity constraint of between **5** and **-5** has been enforced. This ensures that the turtle moves at a manageable speed, allowing the system sufficient time to process movement commands and react to boundary conditions effectively. The loop rate for processing messages is set to 10 Hz, meaning the system processes 10 messages per second. By restricting velocity to this range, the turtle's position updates occur smoothly, preventing excessive overshoot due to high-speed movement.
 
 Even with velocity constraints, minor overshoot may still occur because of message delays or edge cases. For such scenarios, an auto-adjustment mechanism has been added to bring the turtle back within boundaries when overshoot is detected.
 
 Look at [error explaination](#error-handling-issue) section above for explanation of the code.
 
-2.  Auto-adjust Position Near Boundary: 
+2.  Auto-adjust Position Near Boundary
   
-After the turtle stops, check for overshoot. If overshoot is detected (i.e., the turtle crosses the boundary conditions), automatically move the turtle back within the boundary to ensure it stays within the defined limits. 
-//todo: explian and show code of this part 
+After the turtle stops, it’s important to check if it has overshoot the defined boundary. If the turtle moves past the set boundaries, we need to reposition it back within the allowed area. This is done by checking the turtle’s position and, if necessary, applying corrective movement.
+
+**Step-by-Step Explanation:**
+
+  - Check for Overshoot: 
+  
+  We use a boolean flag to check whether the turtle's position exceeds the defined boundary. This is done using the `check_if_overshot_boundary` function, which checks if the current position is outside the allowable range. If the turtle’s position exceeds the boundary, we flag it as an overshoot.
+```cpp
+bool turtle1_overshot = check_if_overshot_boundary(turtle1_x, turtle1_y);
+bool turtle2_overshot = check_if_overshot_boundary(turtle2_x, turtle2_y);
+bool check_if_overshot_boundary(float x, float y){
+  if (x > max_limit || x < boundary_limit  || y > max_limit || y < boundary_limit ){
+    return true;
+  }
+  return false;
+} 
+```
+  - Handle Overshoot: 
+  
+  Once the overshoot is detected, we adjust the turtle’s position by applying corrective velocities to bring it back inside the defined boundary. The `reposition_turtle` function handles the repositioning by applying negative or positive velocities in the direction needed.
+```cpp
+void reposition_turtle(ros::Publisher &pub, float x, float y)
+{
+  geometry_msgs::Twist move_back_msg;
+  if (x > max_limit) {
+      ROS_WARN("Turtle overshot on X axis. Moving back.");
+      move_back_msg.linear.x = -0.2;  // Move back by applying negative velocity on the X axis
+  }
+  else if (x < boundary_limit) {
+      ROS_WARN("Turtle overshot on X axis (negative side). Moving back.");
+      move_back_msg.linear.x = 0.2;   // Move back by applying positive velocity on the X axis
+  }
+  // If the turtle has overshot in the y direction (if needed)
+  if (y > max_limit) {
+      ROS_WARN("Turtle overshot on Y axis. Moving back.");
+      move_back_msg.linear.x = -0.2;  
+  }
+  else if (y < boundary_limit) {
+      ROS_WARN("Turtle overshot on Y axis (negative side). Moving back.");
+      move_back_msg.linear.x = 0.2;   
+  }
+  pub.publish(move_back_msg);
+  ros::Duration(0.5).sleep();
+  stopTurtle(pub); 
+}
+
+```
+Depending on the direction of the overshoot, the turtle is moved back using a small velocity **(0.2 m/s or -0.2 m/s)**. After the turtle has moved back into the boundary, the `stopTurtle` function is called to stop its movement.
 
 ## Summary
