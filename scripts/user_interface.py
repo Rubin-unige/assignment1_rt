@@ -7,8 +7,7 @@ from geometry_msgs.msg import Twist
 
 
 def check_if_turtle2_exists():
-
-    ## Checks if turtle2 exists by subscribing to /turtle2/pose.
+    """Checks if turtle2 exists by subscribing to /turtle2/pose."""
     turtle2_exists = False
 
     def pose_callback(msg):
@@ -17,8 +16,8 @@ def check_if_turtle2_exists():
 
     # Subscribe to /turtle2/pose topic
     rospy.Subscriber('/turtle2/pose', Pose, pose_callback)
-    
-    # Short delay , wait message
+
+    # Short delay, wait for message
     timeout_time = rospy.Time.now() + rospy.Duration(1.0)  # 1-second timeout
     while rospy.Time.now() < timeout_time and not rospy.is_shutdown():
         rospy.sleep(0.1)  # Sleep in small increments
@@ -27,14 +26,12 @@ def check_if_turtle2_exists():
 
 
 def spawn_turtle():
-
-    # Spawns turtle2 if it doesn't exist.
-
+    """Spawns turtle2 if it doesn't exist."""
     rospy.loginfo("Spawning Turtle2.")
     try:
         rospy.wait_for_service('/spawn', timeout=5)
         spawn_srv = rospy.ServiceProxy('/spawn', Spawn)
-        spawn_srv(5.0, 2.0, 0.0, "turtle2") 
+        spawn_srv(5.0, 2.0, 0.0, "turtle2")
     except rospy.ROSException as e:
         rospy.logerr(f"Spawn service not available: {e}")
     except rospy.ServiceException as e:
@@ -66,18 +63,25 @@ def main():
             print("Invalid turtle name. Please enter 'turtle1' or 'turtle2'.")
             continue
 
-        # Get linear and angular velocities with retry logic
+        # Get linear velocity with range validation
         while True:
             try:
-                linear_x = float(input("Enter the linear velocity (numerical value): "))
-                break
+                linear_x = float(input("Enter the linear velocity (between -5 and 5): "))
+                if -5 <= linear_x <= 5:
+                    break
+                else:
+                    print("Invalid input. Linear velocity must be between -5 and 5.")
             except ValueError:
                 print("Invalid input. Linear velocity must be a number.")
 
+        # Get angular velocity with range validation
         while True:
             try:
-                angular_z = float(input("Enter the angular velocity (numerical value): "))
-                break
+                angular_z = float(input("Enter the angular velocity (between -5 and 5): "))
+                if -5 <= angular_z <= 5:
+                    break
+                else:
+                    print("Invalid input. Angular velocity must be between -5 and 5.")
             except ValueError:
                 print("Invalid input. Angular velocity must be a number.")
 
