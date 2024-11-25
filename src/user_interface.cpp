@@ -1,4 +1,3 @@
-
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <turtlesim/Pose.h>
@@ -10,14 +9,13 @@
 
 float linear_x, angular_z;
 
-int main( int argc, char **argv){
-
-    // Initialise ros 
+int main(int argc, char **argv) {
+    // Initialise ROS
     ros::init(argc, argv, "turtle_user_interface");
     ros::NodeHandle nh;
 
     // Initialise service clients
-    ros::ServiceClient client_spawn = nh.serviceClient <turtlesim::Spawn> ("/spawn");
+    ros::ServiceClient client_spawn = nh.serviceClient<turtlesim::Spawn>("/spawn");
     turtlesim::Spawn spawn_srv;
 
     // Spawn Turtle
@@ -28,14 +26,12 @@ int main( int argc, char **argv){
     client_spawn.call(spawn_srv);
 
     // Initialize publishers
-    ros::Publisher pub_turtle1 = nh.advertise <geometry_msgs::Twist>("/turtle1/cmd_vel", 10);
-    ros::Publisher pub_turtle2 = nh.advertise <geometry_msgs::Twist>("/turtle2/cmd_vel", 10);
+    ros::Publisher pub_turtle1 = nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel", 10);
+    ros::Publisher pub_turtle2 = nh.advertise<geometry_msgs::Twist>("/turtle2/cmd_vel", 10);
 
     std::string turtle_name;
 
-    while (ros::ok())
-    {
-        
+    while (ros::ok()) {
         // User input
         std::cout << "Enter the turtle you want to control (turtle1 or turtle2): ";
         std::cin >> turtle_name;
@@ -46,18 +42,19 @@ int main( int argc, char **argv){
             continue;
         }
 
-        // Get the velocities 
-        std::cout << "Enter the linear velocity x: ";
-        while (!(std::cin >> linear_x)) { // Check if the input is float
-            std::cout << "Invalid input. Please enter a valid number for linear velocity: ";
+        // Get the velocities
+        std::cout << "Enter the linear velocity x (between -5 and 5): ";
+        while (!(std::cin >> linear_x) || linear_x < -5 || linear_x > 5) { // Check range and input validity
+            std::cout << "Invalid input. Please enter a linear velocity between -5 and 5: ";
             std::cin.clear(); // Clear error
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
-        std::cout << "Enter the angular velocity z: ";
-        while (!(std::cin >> angular_z)) {
-            std::cout << "Invalid input. Please enter a valid number for angular velocity: ";
-            std::cin.clear(); 
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
+
+        std::cout << "Enter the angular velocity z (between -5 and 5): ";
+        while (!(std::cin >> angular_z) || angular_z < -5 || angular_z > 5) { // Check range and input validity
+            std::cout << "Invalid input. Please enter an angular velocity between -5 and 5: ";
+            std::cin.clear(); // Clear error
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
 
         // Create geometry msgs to move the turtle
@@ -66,8 +63,7 @@ int main( int argc, char **argv){
         turtle_vel.angular.z = angular_z;
 
         // Turtle1
-        if (turtle_name == "turtle1")
-        {
+        if (turtle_name == "turtle1") {
             pub_turtle1.publish(turtle_vel);
             ros::Duration(1.0).sleep();
             turtle_vel.linear.x = 0.0;
@@ -76,16 +72,15 @@ int main( int argc, char **argv){
         }
         // Turtle2
         else if (turtle_name == "turtle2") {
-            pub_turtle2.publish(turtle_vel);  
-            ros::Duration(1.0).sleep();    
-            turtle_vel.linear.x = 0;         
+            pub_turtle2.publish(turtle_vel);
+            ros::Duration(1.0).sleep();
+            turtle_vel.linear.x = 0;
             turtle_vel.angular.z = 0;
-            pub_turtle2.publish(turtle_vel); 
-        } 
+            pub_turtle2.publish(turtle_vel);
+        }
 
-        ros::spinOnce(); 
+        ros::spinOnce();
     }
 
     return 0;
-
 }
