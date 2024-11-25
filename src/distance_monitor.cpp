@@ -6,6 +6,7 @@
 
 // Global variables to store turtle positions
 float turtle1_x, turtle1_y, turtle2_x, turtle2_y;
+float prev_turtle1_x, prev_turtle1_y, prev_turtle2_x, prev_turtle2_y;
 const float distance_threshold = 2.0;
 const float boundary_limit = 1.0;
 const float max_limit = 10.0;
@@ -16,6 +17,7 @@ void turtle2PoseCallback(const turtlesim::Pose::ConstPtr& msg);
 bool is_near_boundary(float x, float y);
 bool check_if_overshot_boundary(float x, float y);
 void reposition_turtle(ros::Publisher &pub, float x, float y);
+void reposition_turtle_close(ros::Publisher &pub);
 
 // Publisher for both turtles' velocity commands
 ros::Publisher pub_turtle1, pub_turtle2;
@@ -55,7 +57,7 @@ int main(int argc, char **argv)
         float distance = sqrt(pow(turtle2_x - turtle1_x, 2) + pow(turtle2_y - turtle1_y, 2));
 
         // Check if turtles are too close
-        bool is_too_close = (distance < distance_threshold);
+        bool is_too_close = (distance <= distance_threshold);
 
         // Check if turtles are near boundaries
         bool turtle1_near_boundary = is_near_boundary(turtle1_x, turtle1_y);
@@ -76,15 +78,29 @@ int main(int argc, char **argv)
             {
                 stopTurtle(pub_turtle1);  // Stop turtle1
                 stopTurtle(pub_turtle2);  // Stop turtle2
+
+                // overshoot error handling 
+                float distance = sqrt(pow(turtle2_x - turtle1_x, 2) + pow(turtle2_y - turtle1_y, 2));
+                if (distance < distance_threshold){
+                    // check which turtle have moved closer to other, and reposition that turtle
+                    if ((turtle1_x == prev_turtle1_x) || (turtle1_y == prev_turtle1_y)){
+                        // do nothing, it has not moved
+                    } else{
+                        reposition_turtle_close(pub_turtle1);
+                    }
+                    if ((turtle2_x == prev_turtle2_x) || (turtle2_y == prev_turtle2_y)){
+                        // do nothing, it has not moved
+                    } else{
+                        reposition_turtle_close(pub_turtle2);
+                    }
+                }
             }
 
-            if (turtle1_near_boundary)
-            {
+            if (turtle1_near_boundary){
                 stopTurtle(pub_turtle1);  // Stop turtle1
             }
 
-            if (turtle2_near_boundary)
-            {
+            if (turtle2_near_boundary){
                 stopTurtle(pub_turtle2);  // Stop turtle2
             }
         }
@@ -94,17 +110,22 @@ int main(int argc, char **argv)
         bool turtle2_overshot = check_if_overshot_boundary(turtle2_x, turtle2_y);
         
         // TODO: handle overshoot
-        if (turtle1_overshot)
-        {
+        if (turtle1_overshot){
             ROS_WARN("Turtle1 is over the boundary after stopping!");
             reposition_turtle(pub_turtle1, turtle1_x, turtle1_y);
         }
 
-        if (turtle2_overshot)
-        {
+        if (turtle2_overshot){
             ROS_WARN("Turtle2 is over the boundary after stopping!"); 
             reposition_turtle(pub_turtle2, turtle2_x, turtle2_y);
         }
+
+        // Update previous positions at the end of each loop
+        prev_turtle1_x = turtle1_x;
+        prev_turtle1_y = turtle1_y;
+        prev_turtle2_x = turtle2_x;
+        prev_turtle2_y = turtle2_y;
+
         rate.sleep();
     }
     return 0;
@@ -122,23 +143,19 @@ void turtle2PoseCallback(const turtlesim::Pose::ConstPtr& msg) {
     ROS_INFO("Turtle2 updated position: (%.2f, %.2f)", turtle2_x, turtle2_y);
 }
 
-bool is_near_boundary(float x, float y)
-{
+bool is_near_boundary(float x, float y){
     return (x < boundary_limit || x > max_limit || y < boundary_limit || y > max_limit);
 }
 
 // Function to check if the turtle is over the boundary after stopping
-bool check_if_overshot_boundary(float x, float y)
-{
-    if (x > max_limit || x < boundary_limit  || y > max_limit || y < boundary_limit )
-    {
+bool check_if_overshot_boundary(float x, float y){
+    if (x > max_limit || x < boundary_limit  || y > max_limit || y < boundary_limit ){
         return true;
     }
     return false;
 } 
 
-void reposition_turtle(ros::Publisher &pub, float x, float y)
-{
+void reposition_turtle(ros::Publisher &pub, float x, float y){
     geometry_msgs::Twist move_back_msg;
     
     // If the turtle has overshot in the x direction
@@ -167,4 +184,13 @@ void reposition_turtle(ros::Publisher &pub, float x, float y)
     // Stop the turtle after moving it back within the boundaries
     ros::Duration(0.5).sleep(); // Let the turtle move back for a brief moment
     stopTurtle(pub); // Stop the turtle after it moves back
+}
+
+void reposition_turtle_close(ros::Publisher &pub){
+    // move turtle back if its too close to otehr
+    geometry_msgs::Twist move_back_msg;
+    move_back_msg.linear.x = -0.2;
+    pub.publish(move_back_msg);
+    ros::Duration(0.5).sleep(); 
+    stopTurtle(pub); 
 }

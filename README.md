@@ -464,7 +464,7 @@ Look at [error explaination](#error-handling-issue) section above for explanatio
 
 2.  Auto-adjust Position Near Boundary
   
-After the turtle stops, it’s important to check if it has overshoot the defined boundary. If the turtle moves past the set boundaries, we need to reposition it back within the allowed area. This is done by checking the turtle’s position and, if necessary, applying corrective movement.
+After the turtle stops, we need to check if it has overshot the boundary. If the turtle has moved past the defined boundaries, we reposition it back within the allowed area. This is achieved by checking the turtle’s position and, if necessary, applying corrective movement to bring it back inside the boundary.
 
 **Step-by-Step Explanation:**
 
@@ -511,6 +511,10 @@ void reposition_turtle(ros::Publisher &pub, float x, float y)
 }
 
 ```
-Depending on the direction of the overshoot, the turtle is moved back using a small velocity **(0.2 m/s or -0.2 m/s)**. After the turtle has moved back into the boundary, the `stopTurtle` function is called to stop its movement.
+In this function, if the turtle overshoots the boundary, the turtle is moved back using a small corrective velocity **(0.2 m/s or -0.2 m/s)**. After the turtle has moved back into the boundary, the `stopTurtle` function is called to stop its movement.
+
+***Note***
+
+These solutions should effectively handle the issue of the turtle overshooting the defined boundaries. However, more advanced solutions—such as smoother control algorithms or more reactive handling of movement commands—could be implemented for a more refined system. For the scope of this assignment, these implementations are sufficient.
 
 ## Summary
