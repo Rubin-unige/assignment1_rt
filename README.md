@@ -19,6 +19,7 @@ This repository contains the assignment work for the **Research Track** course, 
 - [Implementation Details](#implementation-details)
   - [User Interface Node](#user-interface-node)
   - [Distance Monitor Node](#distance-monitor-node)
+- [Summary](#summary)
 
 ## Introduction
 This repository implements a ROS package containing two main nodes: 
@@ -29,8 +30,8 @@ This repository implements a ROS package containing two main nodes:
 These nodes work together within the **`turtlesim`** simulation environment to create a simple, interactive system for controlling and monitoring two turtles.
 
 **Note**:
-  - This assignment was completed using both **Python** and **C++**. 
-  - Custom message is included in this project, which is not required. Good for further development 
+- This assignment is completed using both **Python** and **C++**. 
+- Custom message is included in this project, which is not required. Good for further development 
 
 ## Node Details
 ### 1. User Interface Node (user_interface)
@@ -54,7 +55,7 @@ The root of this repository is the package folder, which contains all necessary 
 
 ### Folder and File Overview
 - **`/msg`**: Contains custom message definitions.
-  - `turtle_distance.msg`: Custom message file for distance monitoring and boundary status.
+  - `turtle_distance.msg`: Custom message file for distance monitoring and boundary status. Contains `float32 distance` msg which is required in `distance monitor` node.
 
 - **`/scripts`**: Contains Python scripts used for the nodes in this project. 
   - `user_interface.py`: Python version of user interface node.
@@ -68,7 +69,7 @@ The root of this repository is the package folder, which contains all necessary 
 
 - **`/package.xml`**: Lists dependencies and package metadata.
 
-- **`/README.md`**: Read me file.
+- **`/README.md`**: This file (Documentation).
 
 ## Getting Started (Read Before Action)
 
@@ -447,23 +448,19 @@ void stopTurtle(ros::Publisher &pub){
 This ensures that turtles stop moving when they're too close or near the boundaries.
 
 ### 6. Check and handle the overshoot issue
-- **Issue**
-
+- **Issue**<br>
 The overshoot occurs because the turtle does not stop exactly at the boundary due to delays in processing movement commands, such as timing or message delays. As the turtle approaches the boundary, the system may not react quickly enough, causing it to move past the boundary. Additionally, when reversing from the boundary, the system might incorrectly detect the turtle as too close, causing it to stop prematurely and prompt the user to input velocity conditions again. This behavior is undesirable and needs to be avoided.
 The issue is further exacerbated when the turtle's velocity is too fast, as the system has less time to process the stop command and adjust the turtle's position before it crosses the boundary.
 
-- **Solutions**
-
-1.  Limit Turtle's Velocity
-
+- **Solutions**<br>
+1.  Limit Turtle's Velocity<br>
 A velocity constraint of between **5** and **-5** has been enforced. This ensures that the turtle moves at a manageable speed, allowing the system sufficient time to process movement commands and react to boundary conditions effectively. The loop rate for processing messages is set to 10 Hz, meaning the system processes 10 messages per second. By restricting velocity to this range, the turtle's position updates occur smoothly, preventing excessive overshoot due to high-speed movement.
 
 Even with velocity constraints, minor overshoot may still occur because of message delays or edge cases. For such scenarios, an auto-adjustment mechanism has been added to bring the turtle back within boundaries when overshoot is detected.
 
 Look at [error explaination](#error-handling-issue) section above for explanation of the code.
 
-2.  Auto-adjust Position Near Boundary
-  
+2.  Auto-adjust Position Near Boundary<br> 
 After the turtle stops, we need to check if it has overshot the boundary. If the turtle has moved past the defined boundaries, we reposition it back within the allowed area. This is achieved by checking the turtle’s position and, if necessary, applying corrective movement to bring it back inside the boundary.
 
 **Step-by-Step Explanation:**
@@ -525,7 +522,7 @@ In this function, if the turtle overshoots the boundary, the turtle is moved bac
 
 - These solutions should effectively handle the issue of the turtle overshooting the defined boundaries. However, more advanced solutions—such as smoother control algorithms or more reactive handling of movement commands—could be implemented for a more refined system. For the scope of this assignment, these implementations are sufficient.
 
-- When turtle move close to each other , the overshoot issue can occur there as well. Due to lack of time , i have only included a check which tell user when turtles are way closer. 
+- When turtle move close to each other , the overshoot issue can occur there as well. Due to lack of time , i have only included a check which notifies user when turtles are way close to each other. After this check, appropriate action can be programmed.
 ```cpp
 if (is_too_close)
   {
@@ -537,4 +534,4 @@ if (is_too_close)
       }}
 ```
 ## Summary
-This implementation provides a user-friendly interface for controlling two turtles in the `turtlesim` environment, ensuring the turtles stay within boundaries and avoid collisions. The Python version also handles the issue of `turtle2` already existing, preventing crashes. Additionally, the Distance Monitor Node effectively monitors the turtles’ proximity to each other and to the boundaries, ensuring they don't collide or overshoot the limits.
+The above implementation thoroughly addresses all aspects of the assignment, going beyond basic requirements by incorporating calculations and handling of overshoot in boundary issues. It ensures that the turtles stay within the designated boundaries and avoids potential collisions. Additionally, it anticipates edge cases, such as the pre-existence of turtle2, preventing crashes or errors. While the current solution is effective, it provides ample room for further improvement and optimization, such as enhancing the distance monitoring system, refining boundary handling, or integrating more advanced features for greater control and flexibility.

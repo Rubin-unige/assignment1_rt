@@ -9,7 +9,7 @@ import math
 # Global variables to store turtle positions
 turtle1_x, turtle1_y, turtle2_x, turtle2_y, turtle2_theta, turtle1_theta = 0, 0, 0, 0, 0, 0
 prev_turtle1_x, prev_turtle1_y, prev_turtle2_x, prev_turtle2_y = 0, 0, 0, 0
-distance_threshold = 1.0
+distance_threshold = 2.0
 boundary_limit = 1.0
 max_limit = 10.0
 

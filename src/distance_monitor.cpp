@@ -7,7 +7,7 @@
 // Global variables to store turtle positions
 float turtle1_x, turtle1_y, turtle2_x, turtle2_y, turtle2_theta, turtle1_theta;
 float prev_turtle1_x, prev_turtle1_y, prev_turtle2_x, prev_turtle2_y;
-const float distance_threshold = 1.0;
+const float distance_threshold = 2.0;
 const float boundary_limit = 1.0;
 const float max_limit = 10.0;
 
