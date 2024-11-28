@@ -5,9 +5,9 @@
 #include <cmath>
 
 // Global variables to store turtle positions
-float turtle1_x, turtle1_y, turtle2_x, turtle2_y;
+float turtle1_x, turtle1_y, turtle2_x, turtle2_y, turtle2_theta, turtle1_theta;
 float prev_turtle1_x, prev_turtle1_y, prev_turtle2_x, prev_turtle2_y;
-const float distance_threshold = 2.0;
+const float distance_threshold = 1.0;
 const float boundary_limit = 1.0;
 const float max_limit = 10.0;
 
@@ -16,7 +16,7 @@ void turtle1PoseCallback(const turtlesim::Pose::ConstPtr& msg);
 void turtle2PoseCallback(const turtlesim::Pose::ConstPtr& msg);
 bool is_near_boundary(float x, float y);
 bool check_if_overshot_boundary(float x, float y);
-void reposition_turtle(ros::Publisher &pub, float x, float y);
+void reposition_turtle(ros::Publisher &pub, float x, float y, float prev_y, float theta);
 void reposition_turtle_close(ros::Publisher &pub);
 
 // Publisher for both turtles' velocity commands
@@ -82,17 +82,7 @@ int main(int argc, char **argv)
                 // overshoot error handling 
                 float distance = sqrt(pow(turtle2_x - turtle1_x, 2) + pow(turtle2_y - turtle1_y, 2));
                 if (distance < distance_threshold){
-                    // check which turtle have moved closer to other, and reposition that turtle
-                    if ((turtle1_x == prev_turtle1_x) || (turtle1_y == prev_turtle1_y)){
-                        // do nothing, it has not moved
-                    } else{
-                        reposition_turtle_close(pub_turtle1);
-                    }
-                    if ((turtle2_x == prev_turtle2_x) || (turtle2_y == prev_turtle2_y)){
-                        // do nothing, it has not moved
-                    } else{
-                        reposition_turtle_close(pub_turtle2);
-                    }
+                   ROS_WARN("Turtles are really too close !!!");
                 }
             }
 
@@ -112,12 +102,12 @@ int main(int argc, char **argv)
         // TODO: handle overshoot
         if (turtle1_overshot){
             ROS_WARN("Turtle1 is over the boundary after stopping!");
-            reposition_turtle(pub_turtle1, turtle1_x, turtle1_y);
+            reposition_turtle(pub_turtle1, turtle1_x, turtle1_y, prev_turtle1_y, turtle1_theta);
         }
 
         if (turtle2_overshot){
             ROS_WARN("Turtle2 is over the boundary after stopping!"); 
-            reposition_turtle(pub_turtle2, turtle2_x, turtle2_y);
+            reposition_turtle(pub_turtle2, turtle2_x, turtle2_y, prev_turtle2_y, turtle2_theta);
         }
 
         // Update previous positions at the end of each loop
@@ -134,13 +124,15 @@ int main(int argc, char **argv)
 void turtle1PoseCallback(const turtlesim::Pose::ConstPtr& msg) {
     turtle1_x = msg->x;
     turtle1_y = msg->y;
-    ROS_INFO("Turtle1 updated position: (%.2f, %.2f)", turtle1_x, turtle1_y);
+    turtle1_theta = msg->theta;
+    ROS_INFO("Turtle1 updated position: (%.2f, %.2f, %.2f)", turtle1_x, turtle1_y, turtle1_theta);
 }
 
 void turtle2PoseCallback(const turtlesim::Pose::ConstPtr& msg) {
     turtle2_x = msg->x;
     turtle2_y = msg->y;
-    ROS_INFO("Turtle2 updated position: (%.2f, %.2f)", turtle2_x, turtle2_y);
+    turtle2_theta = msg->theta;
+    ROS_INFO("Turtle2 updated position: (%.2f, %.2f, %.2f)", turtle2_x, turtle2_y, turtle2_theta);
 }
 
 bool is_near_boundary(float x, float y){
@@ -155,37 +147,6 @@ bool check_if_overshot_boundary(float x, float y){
     return false;
 } 
 
-void reposition_turtle(ros::Publisher &pub, float x, float y){
-    geometry_msgs::Twist move_back_msg;
-    
-    // If the turtle has overshot in the x direction
-    if (x > max_limit) {
-        ROS_WARN("Turtle overshot on X axis. Moving back.");
-        move_back_msg.linear.x = -0.2;  // Move back by applying negative velocity on the X axis
-    }
-    else if (x < boundary_limit) {
-        ROS_WARN("Turtle overshot on X axis (negative side). Moving back.");
-        move_back_msg.linear.x = 0.2;   // Move back by applying positive velocity on the X axis
-    }
-
-    // If the turtle has overshot in the y direction (if needed)
-    if (y > max_limit) {
-        ROS_WARN("Turtle overshot on Y axis. Moving back.");
-        move_back_msg.linear.x = -0.2;  // Move back in the Y axis
-    }
-    else if (y < boundary_limit) {
-        ROS_WARN("Turtle overshot on Y axis (negative side). Moving back.");
-        move_back_msg.linear.x = 0.2;   // Move back in the Y axis
-    }
-
-    // Publish the velocity to move the turtle back
-    pub.publish(move_back_msg);
-
-    // Stop the turtle after moving it back within the boundaries
-    ros::Duration(0.5).sleep(); // Let the turtle move back for a brief moment
-    stopTurtle(pub); // Stop the turtle after it moves back
-}
-
 void reposition_turtle_close(ros::Publisher &pub){
     // move turtle back if its too close to otehr
     geometry_msgs::Twist move_back_msg;
@@ -193,4 +154,83 @@ void reposition_turtle_close(ros::Publisher &pub){
     pub.publish(move_back_msg);
     ros::Duration(0.5).sleep(); 
     stopTurtle(pub); 
+}
+
+void reposition_turtle(ros::Publisher &pub, float x, float y, float prev_y, float theta) {
+    geometry_msgs::Twist move_back_msg;
+
+    // Track Y-axis movement direction (using current and previous y values)
+    bool is_moving_up = (y > prev_y);   // If current y is greater than previous y, the turtle is moving up
+    bool is_moving_down = (y < prev_y); // If current y is less than previous y, the turtle is moving down
+    bool same_value = (y == prev_y);
+
+    // **Handling Y-axis overshooting**
+    if (y > max_limit) {
+        if (theta >= 0) {
+            move_back_msg.linear.x = -0.2;  // Move back in the Y axis (moving upwards and overshot)
+        } else if (theta < 0) {
+            move_back_msg.linear.x = 0.2;   // Move back in the Y axis (moving upwards and overshot in negative direction)
+        }
+    } else if (y < boundary_limit) {
+        if (theta > 0) {
+            move_back_msg.linear.x = 0.2;   // Move back in the Y axis (moving downwards and overshot in positive direction)
+        } else if (theta < 0) {
+            move_back_msg.linear.x = -0.2;  // Move back in the Y axis (moving downwards and overshot in negative direction)
+        }
+    }
+
+    if (x > max_limit) {
+        if (theta > 0) {
+            if (is_moving_up) {
+                move_back_msg.linear.x = -0.2;
+            } else if(is_moving_down){
+                move_back_msg.linear.x = 0.2;
+            }
+        }
+        if (theta == 0){
+            move_back_msg.linear.x = -0.2;
+        } else if (theta == -3.14){
+            move_back_msg.linear.x = 0.2;
+        }
+    } else if (theta < 0){
+        if (is_moving_up) {
+                move_back_msg.linear.x = 0.2;
+            } else if(is_moving_down){
+                move_back_msg.linear.x = -0.2;
+            } else if (same_value){
+                move_back_msg.linear.x = 0.2;
+            }
+    } 
+
+    if (x < boundary_limit) {
+        if (theta >= 0) {
+            if (is_moving_up) {
+                move_back_msg.linear.x = -0.2;
+            } else if (same_value){
+                move_back_msg.linear.x = -0.2;
+            } else if(is_moving_down){
+                move_back_msg.linear.x = 0.2;
+            }
+        }
+        if (theta == 0){
+            move_back_msg.linear.x = 0.2;
+        } else if (theta == -3.14){
+            move_back_msg.linear.x = -0.2;
+        }
+    } else if (theta < 0){
+        if (is_moving_up) {
+                move_back_msg.linear.x = 0.2;
+            } else if(is_moving_down){
+                move_back_msg.linear.x = -0.2;
+            } else if (same_value){
+                move_back_msg.linear.x = 0.2;
+            }
+    } 
+    
+    // Publish the velocity to move the turtle back
+    pub.publish(move_back_msg);
+
+    // Stop the turtle after moving it back within the boundaries
+    ros::Duration(0.5).sleep(); // Let the turtle move back for a brief moment
+    stopTurtle(pub); // Stop the turtle after it moves back
 }
