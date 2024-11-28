@@ -413,7 +413,7 @@ The `is_near_boundary` function is defined as:
 ```cpp
 bool is_near_boundary(float x, float y)
 {
-  return (x < boundary_limit || x > max_limit || y < boundary_limit || y > max_limit);
+    return (x <= boundary_limit || x >= max_limit || y <= boundary_limit || y >= max_limit);
 }
 ```
 If any of the flags (distance or boundary) are triggered, necessary actions are performed.
@@ -463,8 +463,6 @@ Look at [error explaination](#error-handling-issue) section above for explanatio
 2.  Auto-adjust Position Near Boundary<br> 
 After the turtle stops, we need to check if it has overshot the boundary. If the turtle has moved past the defined boundaries, we reposition it back within the allowed area. This is achieved by checking the turtle’s position and, if necessary, applying corrective movement to bring it back inside the boundary.
 
-**Step-by-Step Explanation:**
-
   - Check for Overshoot: 
   
   We use a boolean flag to check whether the turtle's position exceeds the defined boundary. This is done using the `check_if_overshot_boundary` function, which checks if the current position is outside the allowable range. If the turtle’s position exceeds the boundary, we flag it as an overshoot.
@@ -481,48 +479,12 @@ bool check_if_overshot_boundary(float x, float y){
   - Handle Overshoot: 
   
   Once the overshoot is detected, we adjust the turtle’s position by applying corrective velocities to bring it back inside the defined boundary. The `reposition_turtle` function handles the repositioning by applying negative or positive velocities in the direction needed.
-```python
-def reposition_turtle(pub, x, y, prev_y, theta):
-    move_back_msg = Twist()
-    is_moving_up = y > prev_y
-    is_moving_down = y < prev_y
-    same_value = y == prev_y
-
-    # Handling Y-axis overshooting
-    if y > max_limit:
-        move_back_msg.linear.x = -0.2 if theta >= 0 else 0.2
-    elif y < boundary_limit:
-        move_back_msg.linear.x = 0.2 if theta > 0 else -0.2
-
-    # Handling X-axis overshooting
-    if x > max_limit:
-        if theta > 0:
-            move_back_msg.linear.x = -0.2 if is_moving_up else 0.2
-        elif theta == 0:
-            move_back_msg.linear.x = -0.2
-        elif theta == -3.14:
-            move_back_msg.linear.x = 0.2
-    elif x < boundary_limit:
-        if theta >= 0:
-            move_back_msg.linear.x = -0.2 if is_moving_up or same_value else 0.2
-        elif theta == 0:
-            move_back_msg.linear.x = 0.2
-        elif theta == -3.14:
-            move_back_msg.linear.x = -0.2
-
-    pub.publish(move_back_msg)
-    rospy.sleep(0.5)
-    stop_turtle(pub)
-
-```
-In this function, if the turtle overshoots the boundary, the turtle is moved back using a small corrective velocity **(0.2 m/s or -0.2 m/s)**. After the turtle has moved back into the boundary, the `stopTurtle` function is called to stop its movement.
 
 ***Note***
-- The overshoot logic is bit wonky but it works, if i had more time then i would make it better. I did not explain this function in detail as this is extra step to the initial assignment. 
+- I have decided to remove the implementation that attempts to correct the overshoot issue. While the logic was working as intended, it introduced other complications during testing. Rather than submitting something unreliable, I have chosen to provide a more stable solution that ensures functional behavior. The current implementation checks for overshoot occurrences and notifies the user with a warning when an overshoot is detected.
 
-- These solutions should effectively handle the issue of the turtle overshooting the defined boundaries. However, more advanced solutions—such as smoother control algorithms or more reactive handling of movement commands—could be implemented for a more refined system. For the scope of this assignment, these implementations are sufficient.
+- Additionally, the overshoot issue can also arise when the turtles get too close to each other. Due to time constraints, I have only implemented a check to alert the user when the turtles are within a below proximity (i.e., below a predefined distance threshold). Further action to address this behavior can be programmed at a later stage.
 
-- When turtle move close to each other , the overshoot issue can occur there as well. Due to lack of time , i have only included a check which notifies user when turtles are way close to each other. After this check, appropriate action can be programmed.
 ```cpp
 if (is_too_close)
   {
@@ -533,5 +495,9 @@ if (is_too_close)
           ROS_WARN("Turtles are really too close !!!");
       }}
 ```
+- These solutions should effectively handle the issue of the turtle overshooting the defined boundaries. However, more advanced solutions—such as smoother control algorithms or more reactive handling of movement commands—could be implemented for a more refined system. For the scope of this assignment, these implementations are sufficient.
+
 ## Summary
-The above implementation thoroughly addresses all aspects of the assignment, going beyond basic requirements by incorporating calculations and handling of overshoot in boundary issues. It ensures that the turtles stay within the designated boundaries and avoids potential collisions. Additionally, it anticipates edge cases, such as the pre-existence of turtle2, preventing crashes or errors. While the current solution is effective, it provides ample room for further improvement and optimization, such as enhancing the distance monitoring system, refining boundary handling, or integrating more advanced features for greater control and flexibility.
+The current implementation thoroughly addresses the core aspects of the assignment, ensuring that the turtles stop at the designated boundaries and avoid potential collisions by halting at a defined distance threshold. While the handling of overshoot and boundary issues has been removed for now, the program still includes basic checks for overshoot. Specifically, it notifies the user when an overshoot occurs or when the turtles are too close to each other.
+
+The solution is stable and reliable in its current form, but there is still room for future improvements and optimizations. Potential areas for enhancement include refining the distance monitoring system, improving boundary handling for greater precision, and integrating more advanced features to offer better control and flexibility over the turtle interactions.
