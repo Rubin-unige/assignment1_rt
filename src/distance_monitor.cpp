@@ -17,7 +17,6 @@ void turtle2PoseCallback(const turtlesim::Pose::ConstPtr& msg);
 bool is_near_boundary(float x, float y);
 bool check_if_overshot_boundary(float x, float y);
 void reposition_turtle(ros::Publisher &pub, float x, float y, float prev_y, float theta);
-void reposition_turtle_close(ros::Publisher &pub);
 
 // Publisher for both turtles' velocity commands
 ros::Publisher pub_turtle1, pub_turtle2;
@@ -147,35 +146,26 @@ bool check_if_overshot_boundary(float x, float y){
     return false;
 } 
 
-void reposition_turtle_close(ros::Publisher &pub){
-    // move turtle back if its too close to otehr
-    geometry_msgs::Twist move_back_msg;
-    move_back_msg.linear.x = -0.2;
-    pub.publish(move_back_msg);
-    ros::Duration(0.5).sleep(); 
-    stopTurtle(pub); 
-}
-
 void reposition_turtle(ros::Publisher &pub, float x, float y, float prev_y, float theta) {
     geometry_msgs::Twist move_back_msg;
 
     // Track Y-axis movement direction (using current and previous y values)
-    bool is_moving_up = (y > prev_y);   // If current y is greater than previous y, the turtle is moving up
-    bool is_moving_down = (y < prev_y); // If current y is less than previous y, the turtle is moving down
+    bool is_moving_up = (y > prev_y);   
+    bool is_moving_down = (y < prev_y); 
     bool same_value = (y == prev_y);
 
     // **Handling Y-axis overshooting**
     if (y > max_limit) {
         if (theta >= 0) {
-            move_back_msg.linear.x = -0.2;  // Move back in the Y axis (moving upwards and overshot)
+            move_back_msg.linear.x = -0.2; 
         } else if (theta < 0) {
-            move_back_msg.linear.x = 0.2;   // Move back in the Y axis (moving upwards and overshot in negative direction)
+            move_back_msg.linear.x = 0.2;  
         }
     } else if (y < boundary_limit) {
         if (theta > 0) {
-            move_back_msg.linear.x = 0.2;   // Move back in the Y axis (moving downwards and overshot in positive direction)
+            move_back_msg.linear.x = 0.2;   
         } else if (theta < 0) {
-            move_back_msg.linear.x = -0.2;  // Move back in the Y axis (moving downwards and overshot in negative direction)
+            move_back_msg.linear.x = -0.2;  
         }
     }
 
