@@ -484,37 +484,57 @@ bool check_if_overshot_boundary(float x, float y){
   - Handle Overshoot: 
   
   Once the overshoot is detected, we adjust the turtle’s position by applying corrective velocities to bring it back inside the defined boundary. The `reposition_turtle` function handles the repositioning by applying negative or positive velocities in the direction needed.
-```cpp
-void reposition_turtle(ros::Publisher &pub, float x, float y)
-{
-  geometry_msgs::Twist move_back_msg;
-  if (x > max_limit) {
-      ROS_WARN("Turtle overshot on X axis. Moving back.");
-      move_back_msg.linear.x = -0.2;  // Move back by applying negative velocity on the X axis
-  }
-  else if (x < boundary_limit) {
-      ROS_WARN("Turtle overshot on X axis (negative side). Moving back.");
-      move_back_msg.linear.x = 0.2;   // Move back by applying positive velocity on the X axis
-  }
-  // If the turtle has overshot in the y direction (if needed)
-  if (y > max_limit) {
-      ROS_WARN("Turtle overshot on Y axis. Moving back.");
-      move_back_msg.linear.x = -0.2;  
-  }
-  else if (y < boundary_limit) {
-      ROS_WARN("Turtle overshot on Y axis (negative side). Moving back.");
-      move_back_msg.linear.x = 0.2;   
-  }
-  pub.publish(move_back_msg);
-  ros::Duration(0.5).sleep();
-  stopTurtle(pub); 
-}
+```python
+def reposition_turtle(pub, x, y, prev_y, theta):
+    move_back_msg = Twist()
+    is_moving_up = y > prev_y
+    is_moving_down = y < prev_y
+    same_value = y == prev_y
+
+    # Handling Y-axis overshooting
+    if y > max_limit:
+        move_back_msg.linear.x = -0.2 if theta >= 0 else 0.2
+    elif y < boundary_limit:
+        move_back_msg.linear.x = 0.2 if theta > 0 else -0.2
+
+    # Handling X-axis overshooting
+    if x > max_limit:
+        if theta > 0:
+            move_back_msg.linear.x = -0.2 if is_moving_up else 0.2
+        elif theta == 0:
+            move_back_msg.linear.x = -0.2
+        elif theta == -3.14:
+            move_back_msg.linear.x = 0.2
+    elif x < boundary_limit:
+        if theta >= 0:
+            move_back_msg.linear.x = -0.2 if is_moving_up or same_value else 0.2
+        elif theta == 0:
+            move_back_msg.linear.x = 0.2
+        elif theta == -3.14:
+            move_back_msg.linear.x = -0.2
+
+    pub.publish(move_back_msg)
+    rospy.sleep(0.5)
+    stop_turtle(pub)
 
 ```
 In this function, if the turtle overshoots the boundary, the turtle is moved back using a small corrective velocity **(0.2 m/s or -0.2 m/s)**. After the turtle has moved back into the boundary, the `stopTurtle` function is called to stop its movement.
 
 ***Note***
+- The overshoot logic is bit wonky but it works, if i had more time then i would make it better. I did not explain this function in detail as this is extra step to the initial assignment. 
 
-These solutions should effectively handle the issue of the turtle overshooting the defined boundaries. However, more advanced solutions—such as smoother control algorithms or more reactive handling of movement commands—could be implemented for a more refined system. For the scope of this assignment, these implementations are sufficient.
+- These solutions should effectively handle the issue of the turtle overshooting the defined boundaries. However, more advanced solutions—such as smoother control algorithms or more reactive handling of movement commands—could be implemented for a more refined system. For the scope of this assignment, these implementations are sufficient.
 
+- When turtle move close to each other , the overshoot issue can occur there as well. Due to lack of time , i have only included a check which tell user when turtles are way closer. 
+```cpp
+if (is_too_close)
+  {
+      stopTurtle(pub_turtle1);  // Stop turtle1
+      stopTurtle(pub_turtle2);  // Stop turtle2
+      float distance = sqrt(pow(turtle2_x - turtle1_x, 2) + pow(turtle2_y - turtle1_y, 2));
+      if (distance < distance_threshold){
+          ROS_WARN("Turtles are really too close !!!");
+      }}
+```
 ## Summary
+This implementation provides a user-friendly interface for controlling two turtles in the `turtlesim` environment, ensuring the turtles stay within boundaries and avoid collisions. The Python version also handles the issue of `turtle2` already existing, preventing crashes. Additionally, the Distance Monitor Node effectively monitors the turtles’ proximity to each other and to the boundaries, ensuring they don't collide or overshoot the limits.
