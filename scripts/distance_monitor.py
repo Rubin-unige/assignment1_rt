@@ -25,13 +25,10 @@ def turtle1_pose_callback(msg):
     global turtle1_x, turtle1_y
     turtle1_x = msg.x
     turtle1_y = msg.y
-    rospy.loginfo("Turtle1 updated position: (%.2f, %.2f)", turtle1_x, turtle1_y)
-
 def turtle2_pose_callback(msg):
     global turtle2_x, turtle2_y
     turtle2_x = msg.x
     turtle2_y = msg.y
-    rospy.loginfo("Turtle2 updated position: (%.2f, %.2f)", turtle2_x, turtle2_y)
 
 def is_near_boundary(x, y):
     """Check if the turtle is near the boundary."""
