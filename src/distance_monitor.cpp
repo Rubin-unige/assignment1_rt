@@ -17,6 +17,10 @@ void stopTurtle(ros::Publisher &pub);
 bool is_near_boundary(float x, float y);
 bool check_if_overshot_boundary(float x, float y);
 
+// functions used for overshoot handling
+/* void reposition_turtle_close(ros::Publisher &pub);
+void reposition_turtle(ros::Publisher &pub, float x, float y, float prev_y, float theta); */
+
 // Publisher for both turtles' velocity commands
 ros::Publisher pub_turtle1, pub_turtle2;
 
@@ -132,3 +136,91 @@ void stopTurtle(ros::Publisher &pub){
     stop_msg.angular.z = 0.0;
     pub.publish(stop_msg);
 }
+
+/* 
+void reposition_turtle(ros::Publisher &pub, float x, float y, float prev_y, float theta) {
+    geometry_msgs::Twist move_back_msg;
+
+    // Track Y-axis movement direction (using current and previous y values)
+    bool is_moving_up = (y > prev_y);   
+    bool is_moving_down = (y < prev_y);
+    bool same_value = (y == prev_y);
+
+    if (y > max_limit) {
+        if (theta >= 0) {
+            move_back_msg.linear.x = -0.2; 
+        } else if (theta < 0) {
+            move_back_msg.linear.x = 0.2;  
+        }
+    } else if (y < boundary_limit) {
+        if (theta > 0) {
+            move_back_msg.linear.x = 0.2;   
+        } else if (theta < 0) {
+            move_back_msg.linear.x = -0.2;  
+        }
+    }
+
+    if (x > max_limit) {
+        if (theta > 0) {
+            if (is_moving_up) {
+                move_back_msg.linear.x = -0.2;
+            } else if(is_moving_down){
+                move_back_msg.linear.x = 0.2;
+            }
+        }
+        if (theta == 0){
+            move_back_msg.linear.x = -0.2;
+        } else if (theta == -3.14){
+            move_back_msg.linear.x = 0.2;
+        }
+    } else if (theta < 0){
+        if (is_moving_up) {
+                move_back_msg.linear.x = 0.2;
+            } else if(is_moving_down){
+                move_back_msg.linear.x = -0.2;
+            } else if (same_value){
+                move_back_msg.linear.x = 0.2;
+            }
+    } 
+
+    if (x < boundary_limit) {
+        if (theta >= 0) {
+            if (is_moving_up) {
+                move_back_msg.linear.x = -0.2;
+            } else if (same_value){
+                move_back_msg.linear.x = -0.2;
+            } else if(is_moving_down){
+                move_back_msg.linear.x = 0.2;
+            }
+        }
+        if (theta == 0){
+            move_back_msg.linear.x = 0.2;
+        } else if (theta == -3.14){
+            move_back_msg.linear.x = -0.2;
+        }
+    } else if (theta < 0){
+        if (is_moving_up) {
+                move_back_msg.linear.x = 0.2;
+            } else if(is_moving_down){
+                move_back_msg.linear.x = -0.2;
+            } else if (same_value){
+                move_back_msg.linear.x = 0.2;
+            }
+    } 
+
+    // Publish the velocity to move the turtle back
+    pub.publish(move_back_msg);
+
+    // Stop the turtle after moving it back within the boundaries
+    ros::Duration(0.5).sleep(); 
+    stopTurtle(pub); 
+}
+
+void reposition_turtle_close(ros::Publisher &pub){
+    // move turtle back if its too close to otehr
+    geometry_msgs::Twist move_back_msg;
+    move_back_msg.linear.x = -0.2;
+    pub.publish(move_back_msg);
+    ros::Duration(0.5).sleep(); 
+    stopTurtle(pub); 
+} */

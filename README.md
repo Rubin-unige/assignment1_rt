@@ -488,6 +488,8 @@ if (turtle2_overshot){
     ROS_WARN("Turtle2 is over the boundary after stopping!"); 
 }
 ```
+- The **C++** `distance monitor` node had some wonky logic to handle overshoot near simulation boundaries. It mostly worked but introduced a few complications, which is why I decided to remove it.This logic has been commented out to keep things simpler, but it is still in the source for reference.
+
 - Additionally, the overshoot issue can also arise when the turtles get too close to each other. Similar to overshoot near boundaries, here, I have only implemented a check to alert the user when the turtles are way too close in proximity (i.e., below a predefined distance threshold). Further action to address these behaviors can be programmed at a later stage.
 ```cpp
 if (is_too_close)
