@@ -13,19 +13,12 @@ const float max_limit = 10.0;
 // Function declarations
 void turtle1PoseCallback(const turtlesim::Pose::ConstPtr& msg);
 void turtle2PoseCallback(const turtlesim::Pose::ConstPtr& msg);
+void stopTurtle(ros::Publisher &pub);
 bool is_near_boundary(float x, float y);
 bool check_if_overshot_boundary(float x, float y);
 
 // Publisher for both turtles' velocity commands
 ros::Publisher pub_turtle1, pub_turtle2;
-
-// Function to stop the turtles by publishing zero velocity
-void stopTurtle(ros::Publisher &pub){
-    geometry_msgs::Twist stop_msg;
-    stop_msg.linear.x = 0.0;
-    stop_msg.angular.z = 0.0;
-    pub.publish(stop_msg);
-}
 
 int main(int argc, char **argv)
 {
@@ -75,7 +68,7 @@ int main(int argc, char **argv)
                 stopTurtle(pub_turtle1);  // Stop turtle1
                 stopTurtle(pub_turtle2);  // Stop turtle2
 
-                // overshoot error handling 
+                // overshoot error handling, just sends warning for now
                 float distance = sqrt(pow(turtle2_x - turtle1_x, 2) + pow(turtle2_y - turtle1_y, 2));
                 if (distance < distance_threshold){
                    ROS_WARN("Turtles are really too close !!!");
@@ -95,7 +88,7 @@ int main(int argc, char **argv)
         bool turtle1_overshot = check_if_overshot_boundary(turtle1_x, turtle1_y);
         bool turtle2_overshot = check_if_overshot_boundary(turtle2_x, turtle2_y);
         
-        // TODO: handle overshoot
+        // warning that the turtles have overshot the boundary condition
         if (turtle1_overshot){
             ROS_WARN("Turtle1 is over the boundary after stopping!");
         }
@@ -133,3 +126,11 @@ bool check_if_overshot_boundary(float x, float y){
     }
     return false;
 } 
+
+// Function to stop the turtles by publishing zero velocity
+void stopTurtle(ros::Publisher &pub){
+    geometry_msgs::Twist stop_msg;
+    stop_msg.linear.x = 0.0;
+    stop_msg.angular.z = 0.0;
+    pub.publish(stop_msg);
+}

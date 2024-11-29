@@ -82,5 +82,7 @@ int main(int argc, char **argv) {
         ros::spinOnce();
     }
 
+    ros::shutdown();
+    
     return 0;
 }

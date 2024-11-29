@@ -90,7 +90,8 @@ def main():
             if is_too_close:
                 stop_turtle(pub_turtle1)  # Stop turtle1
                 stop_turtle(pub_turtle2)  # Stop turtle2
-                rospy.logwarn("Turtles are really too close!!!")
+                if (distance < distance_threshold):
+                    rospy.logwarn("Turtles are really too close!!!")
             
             if turtle1_near_boundary:
                 stop_turtle(pub_turtle1)  # Stop turtle1
