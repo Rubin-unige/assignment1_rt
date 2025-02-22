@@ -1,4 +1,4 @@
-# Research Track I - First Assignment test
+# Research Track I - First Assignment
 This repository contains the assignment work for the **Research Track** course, completed by:  
 **Rubin Khadka Chhetri**  
 **ID: 6558048**
