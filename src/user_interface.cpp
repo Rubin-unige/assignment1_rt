@@ -1,3 +1,22 @@
+/**
+ * \file user_interface.cpp
+ * \brief This node provides a user interface for controlling turtles in the turtlesim environment.
+ * \author Rubin Khadka Chhetri
+ * \version 1.0.0
+ * \date 22/02/2025
+ *
+ * Publishes to:
+ * - /turtle1/cmd_vel (geometry_msgs/Twist): Velocity commands for turtle1.
+ * - /turtle2/cmd_vel (geometry_msgs/Twist): Velocity commands for turtle2.
+ *
+ * Services:
+ * - /spawn (turtlesim/Spawn): Spawns a new turtle in the turtlesim environment.
+ *
+ * Description:
+ * This node allows the user to control either turtle1 or turtle2 by entering linear and angular velocities.
+ * The user can also spawn a new turtle (turtle2) at a predefined location.
+ */
+
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <turtlesim/Pose.h>
@@ -7,7 +26,18 @@
 #include <unistd.h>
 #include <limits>
 
+// Global variables to store linear and angular velocities
 float linear_x, angular_z;
+
+/**
+ * \brief Main function for the turtle_user_interface node.
+ * \param argc Number of command-line arguments.
+ * \param argv Command-line arguments.
+ * \return 0 on successful completion.
+ *
+ * This function initializes the ROS node, spawns a new turtle (turtle2), and provides a user interface
+ * for controlling either turtle1 or turtle2 by publishing velocity commands.
+ */
 
 int main(int argc, char **argv) {
     // Initialise ROS

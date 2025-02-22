@@ -1,0 +1,90 @@
+\hypertarget{user__interface_8cpp}{}\doxysection{src/user\+\_\+interface.cpp File Reference}
+\label{user__interface_8cpp}\index{src/user\_interface.cpp@{src/user\_interface.cpp}}
+
+
+This node provides a user interface for controlling turtles in the turtlesim environment.  
+
+
+{\ttfamily \#include $<$ros/ros.\+h$>$}\newline
+{\ttfamily \#include $<$std\+\_\+msgs/\+String.\+h$>$}\newline
+{\ttfamily \#include $<$turtlesim/\+Pose.\+h$>$}\newline
+{\ttfamily \#include $<$turtlesim/\+Spawn.\+h$>$}\newline
+{\ttfamily \#include $<$geometry\+\_\+msgs/\+Twist.\+h$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+{\ttfamily \#include $<$limits$>$}\newline
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{user__interface_8cpp_a3c04138a5bfe5d72780bb7e82a18e627}{main}} (int argc, char $\ast$$\ast$argv)
+\begin{DoxyCompactList}\small\item\em Main function for the turtle\+\_\+user\+\_\+interface node. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+float \mbox{\hyperlink{user__interface_8cpp_a6ef24e69b57370abcf35b40ec777f18f}{linear\+\_\+x}}
+\item 
+float \mbox{\hyperlink{user__interface_8cpp_afa644bf33e0fb93ec0f706746816bbcd}{angular\+\_\+z}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This node provides a user interface for controlling turtles in the turtlesim environment. 
+
+\begin{DoxyAuthor}{Author}
+Rubin Khadka Chhetri 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+22/02/2025
+\end{DoxyDate}
+Publishes to\+:
+\begin{DoxyItemize}
+\item /turtle1/cmd\+\_\+vel (geometry\+\_\+msgs/\+Twist)\+: Velocity commands for turtle1.
+\item /turtle2/cmd\+\_\+vel (geometry\+\_\+msgs/\+Twist)\+: Velocity commands for turtle2.
+\end{DoxyItemize}
+
+Services\+:
+\begin{DoxyItemize}
+\item /spawn (turtlesim/\+Spawn)\+: Spawns a new turtle in the turtlesim environment.
+\end{DoxyItemize}
+
+Description\+: This node allows the user to control either turtle1 or turtle2 by entering linear and angular velocities. The user can also spawn a new turtle (turtle2) at a predefined location. 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{user__interface_8cpp_a3c04138a5bfe5d72780bb7e82a18e627}\label{user__interface_8cpp_a3c04138a5bfe5d72780bb7e82a18e627}} 
+\index{user\_interface.cpp@{user\_interface.cpp}!main@{main}}
+\index{main@{main}!user\_interface.cpp@{user\_interface.cpp}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{argc,  }\item[{char $\ast$$\ast$}]{argv }\end{DoxyParamCaption})}
+
+
+
+Main function for the turtle\+\_\+user\+\_\+interface node. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em argc} & Number of command-\/line arguments. \\
+\hline
+{\em argv} & Command-\/line arguments. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on successful completion.
+\end{DoxyReturn}
+This function initializes the R\+OS node, spawns a new turtle (turtle2), and provides a user interface for controlling either turtle1 or turtle2 by publishing velocity commands. 
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{user__interface_8cpp_afa644bf33e0fb93ec0f706746816bbcd}\label{user__interface_8cpp_afa644bf33e0fb93ec0f706746816bbcd}} 
+\index{user\_interface.cpp@{user\_interface.cpp}!angular\_z@{angular\_z}}
+\index{angular\_z@{angular\_z}!user\_interface.cpp@{user\_interface.cpp}}
+\doxysubsubsection{\texorpdfstring{angular\_z}{angular\_z}}
+{\footnotesize\ttfamily float angular\+\_\+z}
+
+\mbox{\Hypertarget{user__interface_8cpp_a6ef24e69b57370abcf35b40ec777f18f}\label{user__interface_8cpp_a6ef24e69b57370abcf35b40ec777f18f}} 
+\index{user\_interface.cpp@{user\_interface.cpp}!linear\_x@{linear\_x}}
+\index{linear\_x@{linear\_x}!user\_interface.cpp@{user\_interface.cpp}}
+\doxysubsubsection{\texorpdfstring{linear\_x}{linear\_x}}
+{\footnotesize\ttfamily float linear\+\_\+x}
+
