@@ -3,6 +3,8 @@ This repository contains the assignment work for the **Research Track** course, 
 **Rubin Khadka Chhetri**  
 **ID: 6558048**
 
+For more details, visit the [Assignment 1 RT Website](https://rubin-unige.github.io/assignment1_rt/).
+
 ## Table of Contents
 - [Introduction](#introduction)
 - [Node Details](#node-details)
